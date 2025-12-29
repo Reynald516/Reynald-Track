@@ -1,13 +1,16 @@
-// src/adapters/transactions.supabase.ts
-import { supabase } from "@/lib/supabase";
-import { Transaction } from "@/domain/transactions/transactions.core";
+import { supabase } from "@/lib/supabase/client"
+import type { Transaction } from "@/src/domain/transactions/transactions.core"
 
 export async function fetchTransactions(): Promise<Transaction[]> {
   const { data, error } = await supabase
     .from("transactions")
     .select("*")
-    .order("date", { ascending: true });
+    .order("date", { ascending: false })
 
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  if (error) throw error
+
+  return (data ?? []).map(t => ({
+    ...t,
+    date: t.date?.slice(0, 10),
+  }))
 }

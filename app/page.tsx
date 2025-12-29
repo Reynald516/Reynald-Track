@@ -18,18 +18,20 @@ export default function ReynaldTrackApp() {
     setIsDarkMode(!isDarkMode)
     document.documentElement.classList.toggle("dark")
   }
-
+  
   return (
-    <main className="min-h-screen bg-background pb-20">
-      <div className="max-w-md lg:max-w-5xl mx-auto">
-        {activeTab === "home" && <HomeView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
-        {activeTab === "wallets" && <WalletsView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
-        {activeTab === "budget" && <BudgetView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
-        {activeTab === "insights" && <InsightsView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
-        {activeTab === "more" && <MoreView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
-      </div>
-
-      <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-    </main>
+    <>
+      <main className="min-h-screen bg-background pb-20">
+        <div className="max-w-md lg:max-w-5xl mx-auto">
+          {activeTab === "home" && <HomeView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
+          {activeTab === "wallets" && <WalletsView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
+          {activeTab === "budget" && <BudgetView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
+          {activeTab === "insights" && <InsightsView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
+          {activeTab === "more" && <MoreView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
+        </div>
+        
+        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+      </main>
+    </>
   )
 }

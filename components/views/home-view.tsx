@@ -35,24 +35,36 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
   const [timeRange, setTimeRange] = useState<"daily" | "monthly">("daily")
   const router = useRouter()
 
-  const { transactions, loading } = useTransactions()
+  const { transactions, loading, refresh, error } = useTransactions()
+
+  useEffect(() => {
+    console.log("HOME transactions:", transactions)
+    console.log("HOME error:", error)
+    console.log("HOME loading:", loading)
+  }, [transactions, error, loading])
 
   const filteredTransactions = useMemo(() => {
-    if (timeRange === "daily") {
-      const today = new Date().toDateString()
-      return transactions.filter(t => new Date(t.date).toDateString() === today)
-    }
-    
-    if (timeRange === "monthly") {
-      const now = new Date()
-      return transactions.filter(t => {
-        const d = new Date(t.date)
-        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-      })
-    }
-    
-    return transactions
-  }, [transactions, timeRange])
+  if (!transactions || transactions.length === 0) return []
+
+  if (timeRange === "daily") {
+    const today = new Date().toISOString().slice(0, 10)
+    return transactions.filter(t => t.date === today)
+  }
+
+  if (timeRange === "monthly") {
+    const now = new Date()
+    const y = now.getFullYear()
+    const m = now.getMonth() + 1
+
+    return transactions.filter(t => {
+      if (!t.date) return false
+      const [yy, mm] = t.date.split("-").map(Number)
+      return yy === y && mm === m
+    })
+  }
+
+  return transactions
+}, [transactions, timeRange])
 
   const { income, expense, net } = useMemo(() => {
     let income = 0
@@ -77,6 +89,7 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
   const [formattedDate, setFormattedDate] = useState("")
   
   useEffect(() => {
+    refresh()
     const today = new Date()
     setFormattedDate(
       today.toLocaleDateString("id-ID", {
@@ -89,7 +102,8 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
   }, [])
 
   const handleStartLog = () => {
-    console.log("[v0] Start log action triggered")
+    router.push("/features/daily-log")
+    router.refresh()
   }
 
   const quickActions = [

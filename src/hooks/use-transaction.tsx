@@ -1,27 +1,34 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { Transaction } from "@/src/domain/transactions/transactions.core"
+import { useCallback, useEffect, useState } from "react"
+import type { Transaction } from "@/src/domain/transactions/transactions.core"
 import { fetchTransactions } from "@/src/adapters/transactions.supabase"
 
 export function useTransactions() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const data = await fetchTransactions()
+      setTransactions(data)
+    } catch (e: any) {
+      setError(e?.message ?? "Failed to load transactions")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    fetchTransactions()
-      .then(data => {
-        console.log("[shadow] transactions fetched:", data);
-        setTransactions(data);
-      })
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
+    load()
+  }, [load])
 
   return {
     transactions,
     loading,
     error,
-  };
+    refresh: load, // ⬅️ INI KUNCI
+  }
 }

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { AppHeader } from "@/components/app-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { logout } from "@/app/actions/logout"
 import {
   User,
   Tag,
@@ -118,7 +119,10 @@ export function MoreView({ isDarkMode, onToggleTheme }: MoreViewProps) {
           <Button
             variant="destructive"
             className="w-full h-12 rounded-xl font-semibold shadow-soft-md hover:shadow-soft-lg transition-smooth button-scale"
-            onClick={() => console.log("[v0] Logout action")}
+            onClick={async () => {
+              await logout()
+              window.location.href = "/pre-onboarding"
+            }}
           >
             <LogOut className="w-5 h-5 mr-2" />
             Logout
