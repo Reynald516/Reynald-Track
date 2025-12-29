@@ -1,15 +1,19 @@
-"use client"
+"use client";
 
-import { ComingSoon } from "@/components/coming-soon"
-import { User } from "lucide-react"
+import { User } from "lucide-react";
+import { ProfileForm } from "./profile-form";
 
 export default function ProfilePage() {
   return (
-    <ComingSoon
-      icon={User}
-      title="Profile"
-      description="Kelola informasi profil Anda, foto, nama, email, dan preferensi personal lainnya."
-      whyImportant="Personalisasi pengalaman Anda dan pastikan informasi akun tetap up-to-date."
-    />
-  )
+    <div className="max-w-xl mx-auto px-4 pt-12 pb-24 space-y-8">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <User className="h-6 w-6" />
+        <h1 className="text-2xl font-semibold">Profile</h1>
+      </div>
+
+      {/* Content */}
+      <ProfileForm />
+    </div>
+  );
 }
