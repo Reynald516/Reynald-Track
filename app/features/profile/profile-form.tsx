@@ -1,17 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { updateProfile } from "./profile-actions";
+import { toast } from "sonner";
 
-export function ProfileForm() {
-  // nanti ambil dari supabase user
-  const [firstName, setFirstName] = useState("Reynald");
-  const [lastName, setLastName] = useState("Track");
-  const email = "user@email.com"; // read-only
+export function ProfileForm({
+  initialFirstName,
+  initialLastName,
+  email,
+}: {
+  initialFirstName: string;
+  initialLastName: string;
+  email: string;
+}) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const [firstName, setFirstName] = useState(initialFirstName);
+  const [lastName, setLastName] = useState(initialLastName);
+
+  const onSave = () => {
+    startTransition(async () => {
+      try {
+        await updateProfile({ firstName, lastName });
+        toast.success("Profile updated");
+      } catch (e: any) {
+        toast.error(e.message || "Failed to update profile");
+      }
+    });
+  };
 
   return (
     <div className="space-y-6">
-
       {/* IDENTITY */}
       <div className="space-y-4">
         <div>
@@ -42,6 +65,16 @@ export function ProfileForm() {
         <p className="text-muted-foreground">Pilot user</p>
       </div>
 
+      {/* ACTIONS */}
+      <div className="flex gap-3 pt-4 border-t">
+        <Button variant="outline" onClick={() => router.back()}>
+          Back
+        </Button>
+
+        <Button onClick={onSave} disabled={isPending}>
+          {isPending ? "Saving..." : "Save changes"}
+        </Button>
+      </div>
     </div>
   );
 }
