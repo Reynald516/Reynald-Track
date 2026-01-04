@@ -7,6 +7,7 @@ import { WalletsView } from "@/components/views/wallets-view"
 import { BudgetView } from "@/components/views/budget-view"
 import { InsightsView } from "@/components/views/insights-view"
 import { MoreView } from "@/components/views/more-view"
+import { getTodayCashflow } from "@/components/views/home-actions"
 
 type Tab = "home" | "wallets" | "budget" | "insights" | "more"
 

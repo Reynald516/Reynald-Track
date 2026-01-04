@@ -2,6 +2,20 @@
 
 import { AppHeader } from "@/components/app-header"
 import { Card, CardContent } from "@/components/ui/card"
+import { useEffect, useState } from "react"
+import { getWalletBalances } from "./wallets-actions"
+import { supabase } from "@/lib/supabase/client"
+import type { WalletBalanceRow } from "@/components/views/wallets-actions"
+
+export async function fetchWalletBalances(): Promise<WalletBalanceRow[]> {
+  const { data, error } = await supabase
+    .from("wallet_balances")
+    .select("*")
+    .order("sort_order")
+
+  if (error) throw error
+  return data ?? []
+}
 import {
   Wallet as WalletIcon,
   Landmark,
@@ -10,7 +24,6 @@ import {
   Plus,
   ChevronRight,
 } from "lucide-react"
-import type { WalletBalanceRow } from "./wallets-actions"
 
 interface WalletsViewProps {
   isDarkMode: boolean
@@ -57,6 +70,7 @@ function colorFromKind(kind?: string) {
 const FALLBACK_WALLETS: WalletBalanceRow[] = [
   {
     wallet_id: "cash",
+    user_id: "",
     name: "Cash",
     kind: "cash",
     icon_key: "Wallet",
@@ -65,6 +79,7 @@ const FALLBACK_WALLETS: WalletBalanceRow[] = [
   },
   {
     wallet_id: "bank",
+    user_id: "",
     name: "Bank BCA",
     kind: "bank",
     icon_key: "Landmark",
@@ -73,6 +88,7 @@ const FALLBACK_WALLETS: WalletBalanceRow[] = [
   },
   {
     wallet_id: "ewallet",
+    user_id: "",
     name: "GoPay",
     kind: "ewallet",
     icon_key: "Smartphone",
@@ -81,6 +97,7 @@ const FALLBACK_WALLETS: WalletBalanceRow[] = [
   },
   {
     wallet_id: "crypto",
+    user_id: "",
     name: "Crypto",
     kind: "crypto",
     icon_key: "Bitcoin",
@@ -98,15 +115,26 @@ export function WalletsView({
   onToggleTheme,
   wallets = [],
 }: WalletsViewProps) {
-  const safeWallets =
-    Array.isArray(wallets) && wallets.length > 0
-      ? wallets
-      : FALLBACK_WALLETS
+  const [liveWallets, setLiveWallets] = useState<WalletBalanceRow[] | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const totalWealth = safeWallets.reduce(
+  const resolvedWallets =
+    Array.isArray(liveWallets) && liveWallets.length > 0
+      ? liveWallets
+      : (Array.isArray(wallets) && wallets.length > 0 ? wallets : FALLBACK_WALLETS)
+
+  const totalWealth = resolvedWallets.reduce(
     (sum, w) => sum + Number(w.balance ?? 0),
     0
   )
+
+  useEffect(() => {
+    fetchWalletBalances()
+      .then(setLiveWallets)
+      .finally(() => setLoading(false))
+  }, [])
+
+  // lalu ganti semua "safeWallets" jadi "resolvedWallets" di bawah
 
   return (
     <div className="space-y-6">
@@ -152,7 +180,7 @@ export function WalletsView({
           </h3>
 
           <div className="grid gap-3">
-            {safeWallets.map((wallet) => {
+            {resolvedWallets.map((wallet) => {
               const Icon = iconFromKey(wallet.icon_key)
               const color = colorFromKind(wallet.kind)
 

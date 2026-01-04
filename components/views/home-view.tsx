@@ -46,21 +46,19 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
   const filteredTransactions = useMemo(() => {
   if (!transactions || transactions.length === 0) return []
 
+  const today = new Date().toISOString().slice(0, 10)      // YYYY-MM-DD
+  const thisMonth = new Date().toISOString().slice(0, 7)   // YYYY-MM
+
   if (timeRange === "daily") {
-    const today = new Date().toISOString().slice(0, 10)
-    return transactions.filter(t => t.date === today)
+    return transactions.filter(
+      t => (t.date ?? "").slice(0, 10) === today
+    )
   }
 
   if (timeRange === "monthly") {
-    const now = new Date()
-    const y = now.getFullYear()
-    const m = now.getMonth() + 1
-
-    return transactions.filter(t => {
-      if (!t.date) return false
-      const [yy, mm] = t.date.split("-").map(Number)
-      return yy === y && mm === m
-    })
+    return transactions.filter(
+      t => (t.date ?? "").slice(0, 7) === thisMonth
+    )
   }
 
   return transactions

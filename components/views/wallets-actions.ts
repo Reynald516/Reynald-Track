@@ -1,9 +1,8 @@
-"use server"
-
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export type WalletBalanceRow = {
   wallet_id: string
+  user_id: string
   name: string
   kind: string
   icon_key: string | null
@@ -18,10 +17,11 @@ export async function getWalletBalances(): Promise<WalletBalanceRow[]> {
   if (authError || !authData?.user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("v_wallet_balances")
-    .select("wallet_id,name,kind,icon_key,sort_order,balance")
-    .eq("user_id", authData.user.id)
-    .order("sort_order", { ascending: true })
+    .from("wallet_balances")
+    .select(
+      "wallet_id, user_id, name, kind, icon_key, sort_order, balance"
+    )
+    .order("sort_order")
 
   if (error) throw new Error(error.message)
 

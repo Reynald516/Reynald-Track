@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils"
 import type { Transaction } from "@/src/domain/transactions/transactions.core"
 import { createTransactionServer, type CreateTransactionResult } from "@/app/actions/create-transaction"
 
-const expenseCategories = ["Makan", "Transport", "Belanja", "Tagihan", "Hiburan", "Lainnya"]
+const expenseCategories = ["Makanan & Minuman", "Transport", "Belanja", "Tagihan", "Entertainment", "Lainnya"]
 const incomeCategories = ["Gaji", "Bonus", "Freelance", "Bisnis", "Hadiah", "Lainnya"]
 const wallets = ["Cash", "Bank", "E-wallet"]
 

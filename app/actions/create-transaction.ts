@@ -25,6 +25,7 @@ export type CreateTransactionResult =
       submissionId: string
     }
 
+
 function safeString(v: FormDataEntryValue | null): string {
   if (typeof v !== "string") return ""
   return v
@@ -35,6 +36,9 @@ export async function createTransactionServer(
   formData: FormData,
 ): Promise<CreateTransactionResult> {
   const submissionId = crypto.randomUUID()
+
+  console.log("SERVER ACTION HIT:", submissionId)
+  console.log("SERVER FORM DATA:", Object.fromEntries(formData.entries()))
 
   try {
     const supabase = await createSupabaseServerClient()
