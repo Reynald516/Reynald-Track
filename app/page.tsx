@@ -8,12 +8,15 @@ import { BudgetView } from "@/components/views/budget-view"
 import { InsightsView } from "@/components/views/insights-view"
 import { MoreView } from "@/components/views/more-view"
 import { getTodayCashflow } from "@/components/views/home-actions"
+import { FloatingActionButton } from "@/components/shared/FloatingActionButton"
+import { useRouter } from "next/navigation"
 
 type Tab = "home" | "wallets" | "budget" | "insights" | "more"
 
 export default function ReynaldTrackApp() {
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [activeTab, setActiveTab] = useState<Tab>("home")
+  const router = useRouter()
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode)
@@ -32,6 +35,14 @@ export default function ReynaldTrackApp() {
         </div>
         
         <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        <FloatingActionButton
+          onAdd={() => {
+            router.push("/features/daily-log")
+          }}
+          onManage={() => {
+            router.push("/transactions")
+          }}
+        />
       </main>
     </>
   )

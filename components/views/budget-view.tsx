@@ -171,18 +171,6 @@ export function BudgetView({ isDarkMode, onToggleTheme }: BudgetViewProps) {
           </CardContent>
         </Card>
 
-        {/* 🔹 TOMBOL KELOLA TRANSAKSI (BARU) */}
-        <Card className="border-0 shadow-soft-md card-float">
-          <CardContent className="p-4">
-            <button
-              onClick={() => router.push("/transactions")}
-              className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-semibold"
-            >
-              Kelola Transaksi
-            </button>
-          </CardContent>
-        </Card>
-
         {/* Category Budgets */}
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-muted-foreground px-1">
