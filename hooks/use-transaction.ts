@@ -1,8 +1,18 @@
+// hooks/use-transaction.ts
+
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import type { Transaction } from "@/src/domain/transactions/transactions.core"
-import { fetchTransactions } from "@/src/adapters/transactions.supabase"
+import { getUserTransactions } from "@/lib/transactions.supabase"
+import { supabase } from "@/lib/supabase/client"
+
+type Transaction = {
+  id: string
+  amount: number
+  category: string
+  type: string
+  created_at: string
+}
 
 export function useTransactions() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -11,10 +21,22 @@ export function useTransactions() {
 
   const load = useCallback(async () => {
     setLoading(true)
+    setError(null)
+
     try {
-      const data = await fetchTransactions()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        throw new Error("User not authenticated")
+      }
+
+      const data = await getUserTransactions(user.id)
+      console.log("RAW TRANSACTIONS:", data)
       setTransactions(data)
     } catch (e: any) {
+      console.error(e)
       setError(e?.message ?? "Failed to load transactions")
     } finally {
       setLoading(false)
@@ -29,6 +51,6 @@ export function useTransactions() {
     transactions,
     loading,
     error,
-    refresh: load, // ⬅️ INI KUNCI
+    refresh: load,
   }
 }

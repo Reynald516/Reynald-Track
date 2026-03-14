@@ -1,4 +1,6 @@
-import { supabase } from "@/lib/supabase";
+// lib/intervention-personalization-engine.ts
+
+import { supabase } from "@/lib/supabase/client";
 
 type LearningSignalRow = {
   intervention_level: "BLOCK" | "WARN" | "NUDGE";

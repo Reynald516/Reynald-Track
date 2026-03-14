@@ -1,3 +1,5 @@
+// components/ai-insight-card.tsx
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Sparkles } from "lucide-react"
 

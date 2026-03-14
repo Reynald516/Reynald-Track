@@ -1,3 +1,5 @@
+// components/transactions/TransactionDetail.tsx
+
 "use client"
 
 import { Trash2, Edit2, X } from "lucide-react"
@@ -68,7 +70,7 @@ export function TransactionDetail({ tx, onClose, onDelete }: Props) {
         
         <DetailRow
           label="Catatan"
-          value={tx.note || "-"}
+          value={tx.notes || "-"}
         />
       </div>
 

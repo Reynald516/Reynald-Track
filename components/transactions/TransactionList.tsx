@@ -1,3 +1,5 @@
+// components/transactions/TransactionList.tsx
+
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
@@ -13,11 +15,11 @@ import { getUserTransactions } from "@/lib/transactions.supabase"
 // =======================
 const CATEGORY_ICONS: Record<string, string> = {
   "Makanan & Minuman": "🍽️",
-  Transport: "🚗",
-  Belanja: "🛍️",
-  Entertainment: "🎮",
-  Tagihan: "📄",
-  Lainnya: "📦",
+  "Transport": "🚗",
+  "Belanja": "🛍️",
+  "Entertainment": "🎮",
+  "Tagihan": "📄",
+  "Lainnya": "📦",
 }
 
 // =======================
@@ -27,6 +29,7 @@ type UITransaction = {
   id: string
   category: string
   wallet: string
+  wallet_id: string
   note?: string | null
   amount: number
   type: "expense" | "income"
@@ -69,14 +72,20 @@ export function TransactionList({
         return {
           id: tx.id,
           category: tx.category,
-          wallet: tx.wallet,
-          note: tx.note,
+
+          wallet: tx.wallet?.name ?? "Unknown Wallet",
+          wallet_id: tx.wallet_id,
+
+          note: tx.notes,
+
           amount: tx.amount,
           type: tx.type,
+
           time: date.toLocaleTimeString("id-ID", {
             hour: "2-digit",
             minute: "2-digit",
           }),
+
           dateLabel: date.toLocaleDateString("id-ID", {
             weekday: "long",
             day: "numeric",

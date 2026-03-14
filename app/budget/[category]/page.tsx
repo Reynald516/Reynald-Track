@@ -1,3 +1,5 @@
+// app/budget/[category]/page.tsx
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -15,7 +17,8 @@ export default function EditBudgetCategoryPage() {
   const [amount, setAmount] = useState<string>("")
   const [loading, setLoading] = useState(true)
 
-  const month = new Date().toISOString().slice(0, 7) // YYYY-MM
+  const now = new Date()
+  const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
   const decodedCategory = decodeURIComponent(category as string)
 
   useEffect(() => {

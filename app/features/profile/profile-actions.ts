@@ -25,7 +25,7 @@ export async function updateProfile({
     .update({
       first_name: firstName,
       last_name: lastName,
-      updated_at: new Date().toISOString(),
+      updated_at: ,
     })
     .eq("id", user.id);
 

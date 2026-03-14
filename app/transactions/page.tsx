@@ -1,9 +1,11 @@
+// app/transactions/page.tsx
+
 "use client"
 
 import { useState } from "react"
 import { TransactionList } from "@/components/transactions/TransactionList"
 import { TransactionDetailSheet } from "@/components/transactions/TransactionDetailSheet"
-import { AddTransactionForm } from "@/components/transactions/AddTransactionForm"
+import { EditTransactionSheet } from "@/components/transactions/EditTransactionSheet"
 import { useRouter } from "next/navigation"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -42,16 +44,6 @@ export default function TransactionsPage() {
           onSuccess={() => {
             setSelectedTx(null)
             setRefreshKey((k) => k + 1) // 🔥 refresh list
-          }}
-        />
-      )}
-
-      {mode === "add" && (
-        <AddTransactionForm
-          onBack={() => setMode("list")}
-          onSuccess={() => {
-            setMode("list")
-            setRefreshKey((k) => k + 1)
           }}
         />
       )}

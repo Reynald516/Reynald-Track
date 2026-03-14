@@ -1,3 +1,5 @@
+// app/actions/create-transaction.ts
+
 "use server"
 
 import { createSupabaseServerClient } from "@/src/lib/supabase/server"
@@ -85,22 +87,33 @@ export async function createTransactionServer(
       .insert({
         amount,
         category,
-        wallet,
+        wallet_id: wallet,
         type,
         notes,
         user_id: user.id,
         date,
       })
-      .select("id, amount, category, wallet, type, notes, date, user_id, created_at")
+      .select("id, amount, category, wallet_id, type, notes, date, user_id, created_at")
       .single()
 
     if (insertError) {
       return { ok: false, error: insertError.message, submissionId }
     }
 
+    // Map wallet_id from database to wallet for frontend compatibility
     return {
       ok: true,
-      transaction: data,
+      transaction: {
+        id: data.id,
+        amount: data.amount,
+        category: data.category,
+        wallet: data.wallet_id,
+        type: data.type,
+        notes: data.notes,
+        date: data.date,
+        user_id: data.user_id,
+        created_at: data.created_at,
+      },
       addAnother,
       submissionId,
     }

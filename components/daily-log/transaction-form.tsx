@@ -1,3 +1,5 @@
+// components/daily-log/transaction-form.tsx
+
 "use client"
 
 import type React from "react"
@@ -18,25 +20,38 @@ import { createTransactionServer, type CreateTransactionResult } from "@/app/act
 
 const expenseCategories = ["Makanan & Minuman", "Transport", "Belanja", "Tagihan", "Entertainment", "Lainnya"]
 const incomeCategories = ["Gaji", "Bonus", "Freelance", "Bisnis", "Hadiah", "Lainnya"]
-const wallets = ["Cash", "Bank", "E-wallet"]
+
+interface WalletOption {
+  id: string
+  name: string
+}
 
 interface TransactionFormProps {
   onSave: (transaction: Transaction, addAnother: boolean) => Promise<void>
   onFormChange: (hasChanges: boolean) => void
   transactionCount: number
+  wallets?: WalletOption[]
 }
 
 const initialActionState: CreateTransactionResult | null = null
 
-export function TransactionForm({ onSave, onFormChange, transactionCount }: TransactionFormProps) {
+export function TransactionForm({
+  onSave,
+  onFormChange,
+  transactionCount,
+  wallets = [],
+}: TransactionFormProps) {
   const { toast } = useToast()
   const amountInputRef = useRef<HTMLInputElement>(null)
+
+  // Get the first wallet's ID as default - safely handle empty array
+  const defaultWalletId = wallets?.length ? wallets[0].id : ""
 
   // ----- Form state (UI lu tetap)
   const [type, setType] = useState<"expense" | "income">("expense")
   const [amount, setAmount] = useState("") // display formatted
   const [category, setCategory] = useState("")
-  const [wallet, setWallet] = useState("Cash")
+  const [wallet, setWallet] = useState(defaultWalletId)
   const [note, setNote] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -85,6 +100,9 @@ export function TransactionForm({ onSave, onFormChange, transactionCount }: Tran
     if (!category) {
       newErrors.category = "Pilih kategori"
     }
+    if (!wallet) {
+      newErrors.wallet = "Pilih wallet"
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -95,7 +113,7 @@ export function TransactionForm({ onSave, onFormChange, transactionCount }: Tran
     setCategory("")
     setNote("")
     setType("expense")
-    setWallet("Cash")
+    setWallet(defaultWalletId)
     setErrors({})
     onFormChange(false)
     amountInputRef.current?.focus()
@@ -215,18 +233,19 @@ export function TransactionForm({ onSave, onFormChange, transactionCount }: Tran
 
         <div className="space-y-2">
           <Label htmlFor="wallet">Wallet</Label>
-          <Select value={wallet} onValueChange={setWallet}>
-            <SelectTrigger id="wallet" className="w-full h-11">
-              <SelectValue />
+          <Select value={wallet} onValueChange={(v) => { setWallet(v); if (errors.wallet) setErrors((p) => ({...p, wallet: ""})) }}>
+            <SelectTrigger id="wallet" className={cn("w-full h-11", errors.wallet && "border-destructive")}>
+              <SelectValue placeholder="Pilih wallet" />
             </SelectTrigger>
             <SelectContent>
-              {wallets.map((w) => (
-                <SelectItem key={w} value={w}>
-                  {w}
+              {(wallets ?? []).map((w) => (
+                <SelectItem key={w.id} value={w.id}>
+                  {w.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {errors.wallet && <p className="text-xs text-destructive">{errors.wallet}</p>}
         </div>
 
         <div className="space-y-2">

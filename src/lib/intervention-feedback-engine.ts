@@ -1,4 +1,6 @@
-import { supabase } from "@/lib/supabase";
+// lib/intervention-feedback-engine.ts
+
+import { supabase } from "@/lib/supabase/client";
 
 type EmotionAfter = { type: string; intensity: number } | null;
 

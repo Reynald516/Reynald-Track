@@ -1,3 +1,5 @@
+// src/adapters/transactions.supabase.ts
+
 import { supabase } from "@/lib/supabase/client"
 import type { Transaction } from "@/src/domain/transactions/transactions.core"
 

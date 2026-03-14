@@ -1,3 +1,5 @@
+// components/views/home-view.tsx
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -51,13 +53,13 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
 
   if (timeRange === "daily") {
     return transactions.filter(
-      t => (t.date ?? "").slice(0, 10) === today
+      (t) => (t.created_at ?? "").slice(0, 10) === today
     )
   }
 
   if (timeRange === "monthly") {
     return transactions.filter(
-      t => (t.date ?? "").slice(0, 7) === thisMonth
+      t => (t.created_at ?? "").slice(0, 7) === thisMonth
     )
   }
 

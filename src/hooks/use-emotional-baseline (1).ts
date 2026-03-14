@@ -1,7 +1,7 @@
 // src/hooks/use-emotional-baseline.ts
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/client";
 import {
   calculateBaselineScore,
   generateBaselineSummary,

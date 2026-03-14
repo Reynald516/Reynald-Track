@@ -1,12 +1,16 @@
+// app/features/daily-log/page.tsx
+
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChevronLeftIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { TransactionForm } from "@/components/daily-log/transaction-form"
 import { InlineMoodSelector } from "@/components/daily-log/inline-mood-selector"
 import { NextDecision } from "@/components/daily-log/next-decision"
+import { supabase } from "@/lib/supabase/client"
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +37,38 @@ export default function DailyLogPage() {
 
   // ✅ KHUSUS FAST ADD CONFIRMATION
   const [showFastSuccess, setShowFastSuccess] = useState(false)
+
+  // Wallet state for TransactionForm
+  // Wallet state for TransactionForm
+  const [wallets, setWallets] = useState<{ id: string; name: string }[]>([])
+  const [loadingWallets, setLoadingWallets] = useState(true)
+
+  useEffect(() => {
+  async function fetchWallets() {
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      setLoadingWallets(false)
+      return
+    }
+
+    const { data, error } = await supabase
+      .from("wallets")
+      .select("id, name")
+      .eq("user_id", user.id)
+      .order("sort_order")
+
+    if (!error && data) {
+      setWallets(data)
+    }
+
+    setLoadingWallets(false)
+  }
+
+  fetchWallets()
+}, [])
+
+
 
   const handleTransactionSave = async (
     transaction: Transaction,
@@ -128,13 +164,15 @@ export default function DailyLogPage() {
             </div>
           )}
 
-          {!showFastSuccess && flowState === "transaction" && (
+          {!showFastSuccess && flowState === "transaction" && !loadingWallets && (
             <TransactionForm
               onSave={handleTransactionSave}
               onFormChange={setHasUnsavedChanges}
               transactionCount={transactions.length}
+              wallets={wallets}
             />
           )}
+
 
           {flowState === "mood" && (
             <InlineMoodSelector

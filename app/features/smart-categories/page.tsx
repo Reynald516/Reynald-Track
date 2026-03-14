@@ -1,3 +1,5 @@
+// app/features/smart-categories/page.tsx
+
 "use client"
 
 import { ComingSoon } from "@/components/coming-soon"

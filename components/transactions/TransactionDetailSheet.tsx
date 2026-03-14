@@ -1,3 +1,5 @@
+// components/transactions/TransactionDetailSheet.tsx
+
 "use client"
 
 import { useState } from "react"
@@ -5,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { EditTransactionSheet } from "./EditTransactionSheet"
 import { deleteTransaction } from "@/lib/transactions.supabase"
-import { CheckCircle2, Pencil, Trash2, X } from "lucide-react"
+import { CheckCircle2, Pencil, Trash2, Wallet, X } from "lucide-react"
 
 import {
   AlertDialog,
@@ -18,6 +20,8 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
+import { useEffect } from "react"
+import { supabase } from "@/src/lib/supabase/client"
 
 export function TransactionDetailSheet({
   transaction,
@@ -30,6 +34,26 @@ export function TransactionDetailSheet({
 }) {
   const [editing, setEditing] = useState(false)
   const [success, setSuccess] = useState<null | "delete">(null)
+  const [wallets, setWallets] = useState<any[]>([])
+
+  // Fetch wallets for EditTransactionSheet
+  useEffect(() => {
+    async function fetchWallets() {
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from("wallets")
+        .select("id, name")
+        .eq("user_id", user.id)
+        .order("sort_order")
+
+      if (data) setWallets(data)
+    }
+
+    fetchWallets()
+  }, [])
 
   async function handleDelete() {
     await deleteTransaction(transaction.id)
@@ -44,6 +68,7 @@ export function TransactionDetailSheet({
     return (
       <EditTransactionSheet
         transaction={transaction}
+        wallets={wallets}
         onCancel={() => setEditing(false)}
         onSuccess={() => {
           onSuccess()
@@ -65,7 +90,7 @@ export function TransactionDetailSheet({
       <div className="space-y-2 text-sm">
         <div><b>Kategori:</b> {transaction.category}</div>
         <div><b>Wallet:</b> {transaction.wallet}</div>
-        <div><b>Catatan:</b> {transaction.note || "-"}</div>
+        <div><b>Catatan:</b> {transaction.notes || "-"}</div>
         <div><b>Jumlah:</b> Rp {Math.abs(transaction.amount).toLocaleString("id-ID")}</div>
       </div>
 

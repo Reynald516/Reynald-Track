@@ -1,3 +1,5 @@
+// app/app-gate/page.tsx
+
 import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 

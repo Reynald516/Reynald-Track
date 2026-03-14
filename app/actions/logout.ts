@@ -1,3 +1,5 @@
+// app/logout.ts
+
 "use server"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"

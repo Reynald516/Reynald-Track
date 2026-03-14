@@ -1,3 +1,5 @@
+// components/views/budget-view.tsx
+
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
@@ -43,14 +45,14 @@ export function BudgetView({ isDarkMode, onToggleTheme }: BudgetViewProps) {
         .from("budget_summary")
         .select("category, budget_amount, spent_amount")
         .eq("user_id", user.id)
-
+        
       if (error) {
         console.error("Budget fetch error:", error)
         setLoading(false)
         return
       }
 
-      // 🔹 FILTER: kategori kosong (0 / 0) dibuang
+      // 🔹 FILTER: kategori belum disetting (0 / 0) DIBUANG
       const filtered = (data ?? []).filter(
         r => !(r.budget_amount === 0 && r.spent_amount === 0)
       )
@@ -63,7 +65,7 @@ export function BudgetView({ isDarkMode, onToggleTheme }: BudgetViewProps) {
   }, [])
 
   // ===============================
-  // HITUNG TOTAL BULANAN (LOGIC LAMA)
+  // HITUNG TOTAL BULANAN
   // ===============================
   const monthlyBudget = useMemo(
     () => rows.reduce((sum, r) => sum + r.budget_amount, 0),
@@ -94,7 +96,6 @@ export function BudgetView({ isDarkMode, onToggleTheme }: BudgetViewProps) {
 
     return rows.map(r => ({
       name: r.category === "Makanan" ? "Makanan & Minuman" : r.category,
-      rawCategory: r.category, // 🔑 tambahan aman
       budget: r.budget_amount,
       spent: r.spent_amount,
       icon: iconMap[r.category] ?? "📦",
@@ -185,13 +186,7 @@ export function BudgetView({ isDarkMode, onToggleTheme }: BudgetViewProps) {
                   : (category.spent / category.budget) * 100
 
               return (
-                <Card
-                  key={i}
-                  className="border-0 shadow-soft-md card-float cursor-pointer"
-                  onClick={() =>
-                    router.push(`/budget/${category.rawCategory}`)
-                  }
-                >
+                <Card key={i} className="border-0 shadow-soft-md card-float">
                   <CardContent className="p-5 space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">

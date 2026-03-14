@@ -1,3 +1,5 @@
+// components/views/wallets-view.tsx
+
 "use client"
 
 import { AppHeader } from "@/components/app-header"

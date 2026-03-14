@@ -1,3 +1,5 @@
+// components/views/insights-view.tsx
+
 "use client"
 
 import { AppHeader } from "@/components/app-header"
@@ -7,7 +9,12 @@ import { Sparkles, TrendingUp, AlertCircle, Send } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { getUserTransactions } from "@/lib/transactions.supabase"
-import { generateInsights, Insight } from "@/lib/insights.engine"
+type Insight = {
+  id: string
+  type: "pattern" | "warning"
+  title: string
+  description: string
+}
 
 interface InsightsViewProps {
   isDarkMode: boolean
@@ -45,6 +52,34 @@ export function InsightsView({ isDarkMode, onToggleTheme }: InsightsViewProps) {
   }, [messages, chatLoading])
 
   // ==============================
+  // LOAD INSIGHTS DARI RTR ENGINE
+  // ==============================
+  useEffect(() => {
+    async function loadAIInsights() {
+      try {
+        const res = await fetch("/api/ai/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        })
+
+        const data = await res.json()
+
+        if (data.ok && Array.isArray(data.insights)) {
+          setInsights(data.insights)
+        } else {
+          setInsights([])
+        }
+      } catch (err) {
+        console.error("Failed to load AI insights", err)
+        setInsights([])
+      }
+    }
+
+    loadAIInsights()
+  }, [])
+
+  // ==============================
   // LOAD DATA
   // ==============================
   useEffect(() => {
@@ -62,19 +97,8 @@ export function InsightsView({ isDarkMode, onToggleTheme }: InsightsViewProps) {
         return
       }
 
-      const txs = await getUserTransactions(user.id)
-      setTransactions(txs)
-
-      const generated = generateInsights(
-        txs.map(t => ({
-          amount: t.amount,
-          category: t.category,
-          date: t.created_at ?? t.date,
-          type: t.type,
-        }))
-      )
-
-      setInsights(generated)
+      const tx = await getUserTransactions(user.id)
+      setTransactions(tx || [])
       setLoading(false)
     }
 

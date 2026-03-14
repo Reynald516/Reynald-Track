@@ -1,3 +1,6 @@
+// lib/transactions.supabase.ts
+
+import { TransactionDetail } from "@/components/transactions/TransactionDetail"
 import { supabase } from "@/lib/supabase/client"
 
 /**
@@ -6,7 +9,7 @@ import { supabase } from "@/lib/supabase/client"
 export async function getUserTransactions(userId: string) {
   const { data, error } = await supabase
     .from("transactions")
-    .select("*")
+    .select(`*, wallet:wallets(id, name)`) // Join dengan tabel wallets untuk mendapatkan nama wallet
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
 
@@ -26,8 +29,8 @@ export async function updateTransaction(
   data: {
     amount: number
     category: string
-    wallet: string
-    note?: string | null
+    wallet_id: string
+    notes?: string | null
   }
 ) {
   const {
@@ -44,11 +47,11 @@ export async function updateTransaction(
     .update({
       amount: data.amount,
       category: data.category,
-      wallet: data.wallet,
-      note: data.note ?? null,
+      wallet_id: data.wallet_id || null,
+      notes: data.notes ?? null,
     })
     .eq("id", id)
-    .eq("user_id", user.id) // 🔥 INI KUNCI RLS
+    .eq("user_id", user.id)
     .select()
     .single()
 

@@ -1,3 +1,5 @@
+// components/views/more-view.tsx
+
 "use client"
 
 import { useRouter } from "next/navigation"
