@@ -1,4 +1,4 @@
-"use server";
+"use server"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -25,7 +25,7 @@ export async function updateProfile({
     .update({
       first_name: firstName,
       last_name: lastName,
-      updated_at: ,
+      updated_at: new Date().toISOString(),
     })
     .eq("id", user.id);
 
