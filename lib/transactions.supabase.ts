@@ -1,6 +1,5 @@
 // lib/transactions.supabase.ts
 
-import { TransactionDetail } from "@/components/transactions/TransactionDetail"
 import { supabase } from "@/lib/supabase/client"
 
 /**
