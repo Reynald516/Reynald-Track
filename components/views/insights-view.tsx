@@ -54,17 +54,12 @@ export function InsightsView({ isDarkMode, onToggleTheme }: InsightsViewProps) {
   // ==============================
   // LOAD INSIGHTS DARI RTR ENGINE
   // ==============================
+  // ✅ BARU - hit endpoint khusus insights
   useEffect(() => {
     async function loadAIInsights() {
       try {
-        const res = await fetch("/api/ai/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        })
-
+        const res = await fetch("/api/ai/insights")
         const data = await res.json()
-
         if (data.ok && Array.isArray(data.insights)) {
           setInsights(data.insights)
         } else {
@@ -75,7 +70,6 @@ export function InsightsView({ isDarkMode, onToggleTheme }: InsightsViewProps) {
         setInsights([])
       }
     }
-
     loadAIInsights()
   }, [])
 
