@@ -106,7 +106,8 @@ export default function EditBudgetCategoryPage() {
                 month
               )
 
-              router.push("/?tab=budget")
+              router.refresh()
+              router.back()
             } catch (err: any) {
               console.error("Save budget error:", err)
               alert(err?.message ?? "Gagal menyimpan budget")

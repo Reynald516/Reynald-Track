@@ -7,7 +7,7 @@ export async function getCategoryBudget(
   category: string,
   month: string
 ) {
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("budget_categories")
     .select("*")
     .eq("user_id", userId)
@@ -15,11 +15,18 @@ export async function getCategoryBudget(
     .eq("month", month)
     .single()
 
-  if (error && error.code !== "PGRST116") {
-    throw error
-  }
+  if (data) return data
 
-  return data
+  const {data: fallbackData} = await supabase
+    .from("budget_categories")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("category", category)
+    .order("month", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  
+  return fallbackData || null
 }
 
 export async function upsertCategoryBudget(

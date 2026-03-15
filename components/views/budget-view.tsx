@@ -23,6 +23,9 @@ export function BudgetView({ isDarkMode, onToggleTheme }: BudgetViewProps) {
   const [rows, setRows] = useState<BudgetRow[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const now = new Date()
+  const currentMonth = now.toLocaleDateString("id-ID", { month: "long", year: "numeric" })
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
 
   // ===============================
   // FETCH BUDGET SUMMARY (AUTH SAFE)
@@ -45,6 +48,7 @@ export function BudgetView({ isDarkMode, onToggleTheme }: BudgetViewProps) {
         .from("budget_summary")
         .select("category, budget_amount, spent_amount")
         .eq("user_id", user.id)
+        .eq("month", monthKey)
         
       if (error) {
         console.error("Budget fetch error:", error)
@@ -96,6 +100,7 @@ export function BudgetView({ isDarkMode, onToggleTheme }: BudgetViewProps) {
 
     return rows.map(r => ({
       name: r.category === "Makanan" ? "Makanan & Minuman" : r.category,
+      rawCategory: r.category,
       budget: r.budget_amount,
       spent: r.spent_amount,
       icon: iconMap[r.category] ?? "📦",
@@ -132,7 +137,7 @@ export function BudgetView({ isDarkMode, onToggleTheme }: BudgetViewProps) {
     <div className="space-y-6">
       <AppHeader
         title="Budget"
-        subtitle="Bulan Januari"
+        subtitle={`${currentMonth} - ${rows.length} kategori`}
         isDarkMode={isDarkMode}
         onToggleTheme={onToggleTheme}
       />
@@ -186,7 +191,7 @@ export function BudgetView({ isDarkMode, onToggleTheme }: BudgetViewProps) {
                   : (category.spent / category.budget) * 100
 
               return (
-                <Card key={i} className="border-0 shadow-soft-md card-float">
+                <Card key={i} className="border-0 shadow-soft-md card-float cursor-pointer hover:shadow-soft-lg transition-smooth" onClick={() => router.push(`/budget/${encodeURIComponent(category.rawCategory)}`)}>
                   <CardContent className="p-5 space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
