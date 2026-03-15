@@ -1,3 +1,5 @@
+// components/views/wallets-actions.ts
+
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export type WalletBalanceRow = {
@@ -17,7 +19,7 @@ export async function getWalletBalances(): Promise<WalletBalanceRow[]> {
   if (authError || !authData?.user) throw new Error("Unauthorized")
 
   const { data, error } = await supabase
-    .from("wallet_balances")
+    .from("v_wallet_balances")
     .select(
       "wallet_id, user_id, name, kind, icon_key, sort_order, balance"
     )

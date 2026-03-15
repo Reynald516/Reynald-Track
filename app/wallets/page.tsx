@@ -1,3 +1,5 @@
+// app/wallets/page.tsx
+
 export const dynamic = "force-dynamic"
 
 import { createSupabaseServerClient } from "@/lib/supabase/server"

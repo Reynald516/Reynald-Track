@@ -11,11 +11,11 @@ import type { WalletBalanceRow } from "@/components/views/wallets-actions"
 
 export async function fetchWalletBalances(): Promise<WalletBalanceRow[]> {
   const { data, error } = await supabase
-    .from("wallet_balances")
+    .from("v_wallet_balances")
     .select("*")
     .order("sort_order")
 
-  if (error) throw error
+  if (error) throw new Error(error.message)
   return data ?? []
 }
 import {
