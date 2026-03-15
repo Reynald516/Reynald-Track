@@ -2,11 +2,13 @@
 
 "use client"
 
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AppHeader } from "@/components/app-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { logout } from "@/app/actions/logout"
+import { supabase } from "@/lib/supabase/client"
 import {
   User,
   Tag,
@@ -25,6 +27,7 @@ import {
   Database,
   LinkIcon,
   Info,
+  Pencil,
 } from "lucide-react"
 
 interface MoreViewProps {
@@ -34,12 +37,34 @@ interface MoreViewProps {
 
 export function MoreView({ isDarkMode, onToggleTheme }: MoreViewProps) {
   const router = useRouter()
+  const [profile, setProfile] = useState<{ name: string; email: string; initials: string } | null>(null)
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("first_name, last_name")
+        .eq("id", user.id)
+        .single()
+
+      const firstName = data?.first_name ?? ""
+      const lastName = data?.last_name ?? ""
+      const name = [firstName, lastName].filter(Boolean).join(" ") || "User"
+      const initials = [firstName[0], lastName[0]].filter(Boolean).join("").toUpperCase() || "U"
+
+      setProfile({ name, email: user.email ?? "", initials })
+    }
+
+    loadProfile()
+  }, [])
 
   const menuSections = [
     {
       title: "Account",
       items: [
-        { icon: User, label: "Profile", action: () => router.push("/features/profile") },
         { icon: Shield, label: "Security & Privacy", action: () => router.push("/features/security") },
         { icon: Settings, label: "Settings", action: () => console.log("[v0] Navigate to Settings") },
       ],
@@ -87,6 +112,32 @@ export function MoreView({ isDarkMode, onToggleTheme }: MoreViewProps) {
       <AppHeader title="More" subtitle="Settings & preferences" isDarkMode={isDarkMode} onToggleTheme={onToggleTheme} />
 
       <div className="px-5 space-y-6 pb-28">
+
+        {/* PROFILE CARD */}
+        <Card
+          className="border-0 shadow-soft-lg bg-gradient-to-br from-card to-card/50 card-float cursor-pointer hover:shadow-soft-xl transition-smooth"
+          onClick={() => router.push("/features/profile")}
+        >
+          <CardContent className="p-5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {/* Avatar with initials */}
+              <div className="w-14 h-14 rounded-full bg-accent flex items-center justify-center text-accent-foreground text-xl font-bold shadow-soft-md">
+                {profile?.initials ?? "U"}
+              </div>
+              <div>
+                <p className="font-semibold text-base tracking-tight">
+                  {profile?.name ?? "Loading..."}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {profile?.email ?? ""}
+                </p>
+              </div>
+            </div>
+            <Pencil className="w-4 h-4 text-muted-foreground" />
+          </CardContent>
+        </Card>
+
+        {/* MENU SECTIONS */}
         {menuSections.map((section, i) => (
           <section key={i} className="space-y-3">
             <h3 className="text-sm font-semibold text-muted-foreground px-1">{section.title}</h3>

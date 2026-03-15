@@ -1,3 +1,5 @@
+// app/features/profile/page.tsx
+
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ProfileForm } from "./profile-form";
 import { User } from "lucide-react";

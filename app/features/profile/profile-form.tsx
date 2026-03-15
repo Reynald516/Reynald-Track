@@ -1,3 +1,5 @@
+// app/features/profile/profile-form.tsx
+
 "use client";
 
 import { useState, useTransition } from "react";
@@ -27,6 +29,7 @@ export function ProfileForm({
       try {
         await updateProfile({ firstName, lastName });
         toast.success("Profile updated");
+        router.back();
       } catch (e: any) {
         toast.error(e.message || "Failed to update profile");
       }
