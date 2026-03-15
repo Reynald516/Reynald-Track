@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     // 5️⃣ RETURN
     return NextResponse.json({
       ok: true,
-      answer: rtrData.answer ?? "Aku belum bisa menyimpulkan itu dari datamu.",
+      answer: rtrData.response ?? rtrData.answer ?? "Aku belum bisa menyimpulkan itu dari datamu.",
     })
 
   } catch (err) {
