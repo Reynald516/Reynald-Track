@@ -9,6 +9,7 @@ import { Sparkles, TrendingUp, AlertCircle, Send } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { supabase } from "@/lib/supabase/client"
 import { getUserTransactions } from "@/lib/transactions.supabase"
+import { useRouter } from "next/navigation"
 type Insight = {
   id: string
   type: "pattern" | "warning"
@@ -43,6 +44,7 @@ export function InsightsView({ isDarkMode, onToggleTheme }: InsightsViewProps) {
     "Kategori mana yang paling boros?",
     "Tips hemat untuk bulan ini?",
   ]
+  const router = useRouter()
 
   // ==============================
   // AUTO SCROLL CHAT (AMAN)
@@ -85,9 +87,7 @@ export function InsightsView({ isDarkMode, onToggleTheme }: InsightsViewProps) {
       } = await supabase.auth.getUser()
 
       if (!user) {
-        setInsights([])
-        setTransactions([])
-        setLoading(false)
+        router.push("/login")  // ← redirect ke login
         return
       }
 

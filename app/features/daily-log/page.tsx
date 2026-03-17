@@ -48,7 +48,8 @@ export default function DailyLogPage() {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      setLoadingWallets(false)
+      setLoadingWallets(false)  // ← tambah ini
+      router.push("/login")  // ← redirect ke login
       return
     }
 
