@@ -30,7 +30,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // 1. Coba RTR Engine dulu (dengan timeout 10 detik)
+    // 1. Coba RTR Engine dulu
     try {
       const rtrRes = await fetch(`${RTR_BASE_URL}/run-daily/${user.id}`, {
         method: "GET",
@@ -40,8 +40,10 @@ export async function GET() {
 
       if (rtrRes.ok) {
         const rtrData = await rtrRes.json()
-        const rawPatterns = rtrData?.insight?.patterns ?? []
+        const insight = rtrData?.insight
 
+        // Cek patterns array (format lama)
+        const rawPatterns = insight?.patterns ?? []
         if (rawPatterns.length > 0) {
           const insights = rawPatterns
             .filter((p: any) => p?.description)
@@ -53,32 +55,30 @@ export async function GET() {
               title: mapPatternTitle(p.type),
               description: p.description,
             }))
-
           return NextResponse.json({ ok: true, insights })
+        }
+
+        // Fallback: generate dari field user_insights yang tersedia
+        if (insight) {
+          const insights = generateInsightsFromUserInsights(insight)
+          if (insights.length > 0) {
+            return NextResponse.json({ ok: true, insights })
+          }
         }
       }
     } catch {
-      // RTR Engine lambat/mati, lanjut ke fallback
+      // RTR Engine lambat/mati, lanjut ke fallback Supabase
     }
 
-    // 2. Fallback: baca langsung dari Supabase
-    const [{ data: analysis }, { data: txData }] = await Promise.all([
-      supabase
-        .from("user_analysis")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("analysis_date", { ascending: false })
-        .limit(1)
-        .single(),
-      supabase
-        .from("transactions")
-        .select("amount, type, category, created_at, date")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(100),
-    ])
+    // 2. Fallback: baca langsung dari Supabase (transactions saja)
+    const { data: txData } = await supabase
+      .from("transactions")
+      .select("amount, type, category, created_at, date")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(100)
 
-    const insights = generateLocalInsights(analysis, txData ?? [])
+    const insights = generateInsightsFromTransactions(txData ?? [])
 
     return NextResponse.json({ ok: true, insights })
   } catch (err) {
@@ -87,12 +87,106 @@ export async function GET() {
   }
 }
 
-function generateLocalInsights(analysis: any, transactions: any[]): any[] {
+// Generate insight cards dari data user_insights (field RTR Engine)
+function generateInsightsFromUserInsights(insight: any): any[] {
   const insights: any[] = []
 
-  const totalIncome = Number(analysis?.total_income ?? 0)
-  const totalExpense = Number(analysis?.total_expense ?? 0)
-  const dominantCategory = analysis?.dominant_category
+  const totalIncome = Number(insight?.total_income ?? 0)
+  const totalExpense = Number(insight?.total_expense ?? 0)
+  const netCashflow = Number(insight?.net_cashflow ?? 0)
+  const dominantCategory = insight?.dominant_category
+  const riskLevel = insight?.risk_level
+  const behaviorProfile = insight?.behavior_profile
+  const habitWarning = insight?.habit_warning
+  const isAnomaly = insight?.is_anomaly
+
+  if (isAnomaly) {
+    insights.push({
+      id: "anomaly",
+      type: "warning",
+      title: "Transaksi Tidak Biasa Terdeteksi",
+      description: "Ada pola transaksi yang tidak biasa bulan ini. Periksa kembali pengeluaranmu.",
+    })
+  }
+
+  if (habitWarning) {
+    insights.push({
+      id: "habit-warning",
+      type: "warning",
+      title: "Peringatan Kebiasaan",
+      description: habitWarning,
+    })
+  }
+
+  if (behaviorProfile) {
+    insights.push({
+      id: "behavior-profile",
+      type: "pattern",
+      title: "Profil Keuanganmu",
+      description: behaviorProfile,
+    })
+  }
+
+  if (dominantCategory && totalExpense > 0) {
+    insights.push({
+      id: "dominant-category",
+      type: "pattern",
+      title: "Pola Pengeluaran Terdeteksi",
+      description: `Pengeluaran terbesar kamu ada di kategori ${dominantCategory}. Total pengeluaran: Rp ${totalExpense.toLocaleString("id-ID")}.`,
+    })
+  }
+
+  if (riskLevel === "HIGH" || riskLevel === "CRITICAL") {
+    insights.push({
+      id: "risk-level",
+      type: "warning",
+      title: "Risiko Keuangan Perlu Perhatian",
+      description: `Level risiko keuanganmu saat ini: ${riskLevel}. Sebaiknya tinjau pengeluaranmu segera.`,
+    })
+  }
+
+  if (totalIncome > 0 && totalExpense > totalIncome) {
+    insights.push({
+      id: "overspending",
+      type: "warning",
+      title: "Pengeluaran Melebihi Pemasukan",
+      description: `Pengeluaran kamu (Rp ${totalExpense.toLocaleString("id-ID")}) melebihi pemasukan (Rp ${totalIncome.toLocaleString("id-ID")}). Perlu evaluasi segera.`,
+    })
+  } else if (totalIncome > 0 && netCashflow > 0) {
+    const savingsRate = Math.round((netCashflow / totalIncome) * 100)
+    insights.push({
+      id: "savings",
+      type: "pattern",
+      title: "Kondisi Keuangan Sehat",
+      description: `Kamu berhasil menyisihkan sekitar ${savingsRate}% dari pemasukan bulan ini. Pertahankan!`,
+    })
+  }
+
+  return insights
+}
+
+// Generate insight dari raw transactions (tanpa RTR Engine)
+function generateInsightsFromTransactions(transactions: any[]): any[] {
+  const insights: any[] = []
+
+  const totalIncome = transactions
+    .filter(t => t.type?.toLowerCase() === "income")
+    .reduce((sum, t) => sum + Number(t.amount), 0)
+
+  const totalExpense = transactions
+    .filter(t => t.type?.toLowerCase() === "expense")
+    .reduce((sum, t) => sum + Number(t.amount), 0)
+
+  if (totalIncome === 0 && totalExpense === 0) return insights
+
+  const categoryMap: Record<string, number> = {}
+  transactions
+    .filter(t => t.type?.toLowerCase() === "expense")
+    .forEach(t => {
+      if (t.category) categoryMap[t.category] = (categoryMap[t.category] ?? 0) + Number(t.amount)
+    })
+
+  const dominantCategory = Object.entries(categoryMap).sort((a, b) => b[1] - a[1])[0]?.[0]
 
   if (dominantCategory && totalExpense > 0) {
     insights.push({
@@ -108,7 +202,7 @@ function generateLocalInsights(analysis: any, transactions: any[]): any[] {
       id: "overspending",
       type: "warning",
       title: "Pengeluaran Melebihi Pemasukan",
-      description: `Pengeluaran kamu (Rp ${totalExpense.toLocaleString("id-ID")}) melebihi pemasukan (Rp ${totalIncome.toLocaleString("id-ID")}). Perlu evaluasi segera.`,
+      description: `Pengeluaran (Rp ${totalExpense.toLocaleString("id-ID")}) melebihi pemasukan (Rp ${totalIncome.toLocaleString("id-ID")}). Perlu evaluasi segera.`,
     })
   } else if (totalIncome > 0) {
     const savingsRate = Math.round(((totalIncome - totalExpense) / totalIncome) * 100)
@@ -131,25 +225,7 @@ function generateLocalInsights(analysis: any, transactions: any[]): any[] {
       id: "transport-warning",
       type: "warning",
       title: "Budget Transport Perlu Perhatian",
-      description: `Pengeluaran transportmu sudah Rp ${transportTotal.toLocaleString("id-ID")}. Pertimbangkan alternatif yang lebih hemat.`,
-    })
-  }
-
-  const weekendFood = transactions.filter(t => {
-    const day = new Date(t.date ?? t.created_at).getDay()
-    return (
-      t.type?.toLowerCase() === "expense" &&
-      t.category === "Makanan & Minuman" &&
-      (day === 0 || day === 6)
-    )
-  })
-
-  if (weekendFood.length >= 2) {
-    insights.push({
-      id: "weekend-food",
-      type: "pattern",
-      title: "Pola Pengeluaran Akhir Pekan",
-      description: "Pengeluaran makanan cenderung naik di akhir pekan. Pertimbangkan meal prep untuk menghemat.",
+      description: `Pengeluaran transport sudah Rp ${transportTotal.toLocaleString("id-ID")}. Pertimbangkan alternatif lebih hemat.`,
     })
   }
 

@@ -100,13 +100,17 @@ export async function createTransactionServer(
       return { ok: false, error: insertError.message, submissionId }
     }
 
-    // Setelah insert berhasil dan sebelum return
-    // Fire and forget — jangan tunggu, jangan block user
+        // Trigger RTR Engine analysis — await dengan timeout agar tidak mati di serverless
     const engineUrl = process.env.RTR_ENGINE_URL
     if (engineUrl) {
-      fetch(`${engineUrl}/trigger_analysis/${user.id}`, {
-        method: "POST",
-      }).catch(() => {})
+      try {
+        await fetch(`${engineUrl}/trigger_analysis/${user.id}`, {
+          method: "POST",
+          signal: AbortSignal.timeout(5000),
+        })
+      } catch {
+        // Timeout atau engine down — tidak masalah, fallback ada di engine pipeline
+      }
     }
 
     // Map wallet_id from database to wallet for frontend compatibility
