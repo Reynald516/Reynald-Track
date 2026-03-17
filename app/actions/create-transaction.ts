@@ -100,6 +100,15 @@ export async function createTransactionServer(
       return { ok: false, error: insertError.message, submissionId }
     }
 
+    // Setelah insert berhasil dan sebelum return
+    // Fire and forget — jangan tunggu, jangan block user
+    const engineUrl = process.env.RTR_ENGINE_URL
+    if (engineUrl) {
+      fetch(`${engineUrl}/trigger_analysis/${user.id}`, {
+        method: "POST",
+      }).catch(() => {})
+    }
+
     // Map wallet_id from database to wallet for frontend compatibility
     return {
       ok: true,
