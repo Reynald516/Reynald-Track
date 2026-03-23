@@ -4,7 +4,7 @@
 
 import type React from "react"
 import { useEffect, useRef, useState, useActionState } from "react"
-
+import { ReceiptScanner } from "@/components/daily-log/receipt-scanner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -154,6 +154,23 @@ export function TransactionForm({
 
   const canAddMore = transactionCount < 3
 
+  const handleScanComplete = (result: {
+  amount?: number
+  category?: string
+  note?: string
+  type?: "expense" | "income"
+}) => {
+  if (result.type) setType(result.type)
+  if (result.amount) setAmount(formatCurrency(String(result.amount)))
+  if (result.category) setCategory(result.category)
+  if (result.note) setNote(result.note.slice(0, 120))
+  
+  toast({
+    title: "✅ Struk berhasil dibaca!",
+    description: "Form sudah diisi otomatis. Cek dan konfirmasi.",
+  })
+}
+
   return (
     <form
       action={formAction}
@@ -176,6 +193,11 @@ export function TransactionForm({
 
       {/* default: Simpan (tidak addAnother) */}
       <input type="hidden" name="addAnother" value="0" />
+
+      {/* Scanner */}
+      <div className="mb-4">
+        <ReceiptScanner onScanComplete={handleScanComplete} />
+      </div>
 
       <div className="space-y-6">
         <div className="space-y-3">
