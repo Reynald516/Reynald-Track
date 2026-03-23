@@ -2,6 +2,7 @@
 
 "use client"
 
+import { ScanOverlay } from "@/components/scan/scan-overlay"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AppHeader } from "@/components/app-header"
@@ -27,6 +28,13 @@ import {
   Tags,
   MessageSquare,
 } from "lucide-react"
+
+type QuickAction = {
+  icon: any
+  label: string
+  href?: string
+  action?: string
+}
 
 interface HomeViewProps {
   isDarkMode: boolean
@@ -106,10 +114,9 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
     router.refresh()
   }
 
-  const quickActions = [
-    { icon: Camera, label: "Scan Struk", href: "/features/scan-receipt" },
+  const quickActions: QuickAction[] = [
+    { icon: Camera, label: "Scan Struk", action: "scan" },
     { icon: Zap, label: "CTR", href: "/features/quick-capture" },
-    { icon: Camera, label: "Buka Kamera", href: "/features/scan-receipt" },
     { icon: Flame, label: "Streak & Habit", href: "/features/streak-habit" },
     { icon: Target, label: "Goals / Target", href: "/features/goals" },
     { icon: FileBarChart, label: "Reports", href: "/features/reports" },
@@ -118,6 +125,8 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
     { icon: Tags, label: "Smart Categories", href: "/features/smart-categories" },
     { icon: MessageSquare, label: "AI Coach", href: "/features/ai-coach" },
   ]
+
+  const [showScan, setShowScan] = useState(false)
 
   return (
     <div className="space-y-6 text-crisp">
@@ -140,7 +149,13 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
               return (
                 <button
                   key={index}
-                  onClick={() => router.push(action.href)}
+                  onClick={() => {
+                    if (action.action === "scan") {
+                      setShowScan(true)
+                    } else if (action.href) {
+                      router.push(action.href)
+                    }
+                  }}
                   className="flex-shrink-0 flex flex-col items-center gap-2 p-3 rounded-xl bg-card shadow-soft hover:shadow-soft-md transition-smooth button-scale min-w-[72px]"
                 >
                   <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center">
@@ -263,6 +278,18 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
             message="Belum ada pola yang terdeteksi. Catat transaksimu untuk mendapat insight personal."
           />
         </section>
+
+        {showScan && (
+          <ScanOverlay
+            onClose={() => setShowScan(false)}
+            onScanComplete={(result) => {
+              setShowScan(false)
+              // Simpan result dan redirect ke form
+              sessionStorage.setItem("scan_result", JSON.stringify(result))
+              router.push("/features/daily-log")
+            }}
+          />
+        )}
       </div>
     </div>
   )
