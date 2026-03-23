@@ -3,7 +3,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Camera, X, Loader2 } from "lucide-react"
+import { Camera, Loader2 } from "lucide-react"
 
 interface ScanResult {
   amount?: number
@@ -19,7 +19,6 @@ interface ReceiptScannerProps {
 export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [scanning, setScanning] = useState(false)
-  const [preview, setPreview] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,11 +26,6 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
     if (!file) return
 
     setError(null)
-
-    // Preview gambar
-    const reader = new FileReader()
-    reader.onload = () => setPreview(reader.result as string)
-    reader.readAsDataURL(file)
 
     // Proses dengan Gemini
     await scanWithGemini(file)
@@ -50,26 +44,32 @@ export function ReceiptScanner({ onScanComplete }: ReceiptScannerProps) {
       const base64Data = base64.split(",")[1]
       const mimeType = file.type || "image/jpeg"
 
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-      if (!apiKey) throw new Error("Gemini API key tidak ditemukan")
+      const groqKey = process.env.NEXT_PUBLIC_GROQ_API_KEY
+      if (!groqKey) throw new Error("Groq API key tidak ditemukan")
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        "https://api.groq.com/openai/v1/chat/completions",
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    inline_data: {
-                      mime_type: mimeType,
-                      data: base64Data,
-                    },
-                  },
-                  {
-                    text: `Kamu adalah asisten keuangan. Analisis gambar ini (struk belanja, nota, atau catatan keuangan).
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${groqKey}`,
+            },
+            body: JSON.stringify({
+                model: "meta-llama/llama-4-scout-17b-16e-instruct",
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            {
+                                type: "image_url",
+                                image_url: {
+                                    url: `data:${mimeType};base64,${base64Data}`,
+                                },
+                            },
+                            {
+                                type: "text",
+                                text: `Kamu adalah asisten keuangan. Analisis gambar ini (struk belanja, nota, atau catatan keuangan).
 
 Ekstrak informasi berikut dan jawab HANYA dalam format JSON, tanpa teks lain:
 {
@@ -80,29 +80,21 @@ Ekstrak informasi berikut dan jawab HANYA dalam format JSON, tanpa teks lain:
 }
 
 Aturan:
-- Jika tidak ada gambar struk/nota yang jelas, tetap berikan estimasi terbaik
 - amount harus angka bulat tanpa format (contoh: 45000 bukan 45.000)
 - Jika total tidak jelas, ambil angka terbesar yang terlihat
-- note berisi nama toko/merchant jika ada, atau deskripsi singkat
+- note berisi nama toko/merchant jika ada
 - Jawab HANYA JSON, tidak ada penjelasan lain`,
-                  },
+                            },
+                        ],
+                    },
                 ],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.1,
-              maxOutputTokens: 256,
-            },
-          }),
+                max_tokens: 256,
+                temperature: 0.1,
+            }),
         }
-      )
-
-      if (!response.ok) {
-        throw new Error(`Gemini error: ${response.status}`)
-      }
-
-      const data = await response.json()
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ""
+    )
+    const data = await response.json()
+    const text = data.choices?.[0]?.message?.content || ""
 
       // Parse JSON dari response
       const cleanText = text.replace(/```json|```/g, "").trim()
@@ -114,7 +106,6 @@ Aturan:
       }
 
       onScanComplete(result)
-      setPreview(null)
 
     } catch (err: any) {
       console.error("Scan error:", err)
@@ -123,7 +114,6 @@ Aturan:
       } else {
         setError(err.message || "Gagal scan struk. Coba lagi.")
       }
-      setPreview(null)
     } finally {
       setScanning(false)
     }
@@ -136,12 +126,6 @@ Aturan:
       reader.onerror = reject
       reader.readAsDataURL(file)
     })
-  }
-
-  const cancelPreview = () => {
-    setPreview(null)
-    setScanning(false)
-    setError(null)
   }
 
   // Loading state

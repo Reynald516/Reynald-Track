@@ -45,26 +45,32 @@ export function ScanOverlay({ onClose, onScanComplete }: ScanOverlayProps) {
       const base64Data = base64.split(",")[1]
       const mimeType = file.type || "image/jpeg"
 
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-      if (!apiKey) throw new Error("API key tidak ditemukan")
+      const groqKey = process.env.NEXT_PUBLIC_GROQ_API_KEY
+      if (!groqKey) throw new Error("Groq API key tidak ditemukan")
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        "https://api.groq.com/openai/v1/chat/completions",
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    inline_data: {
-                      mime_type: mimeType,
-                      data: base64Data,
-                    },
-                  },
-                  {
-                    text: `Kamu adalah asisten keuangan. Analisis gambar ini (struk belanja, nota, atau catatan keuangan).
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${groqKey}`,
+            },
+            body: JSON.stringify({
+                model: "meta-llama/llama-4-scout-17b-16e-instruct",
+                messages: [
+                    {
+                        role: "user",
+                        content: [
+                            {
+                                type: "image_url",
+                                image_url: {
+                                    url: `data:${mimeType};base64,${base64Data}`,
+                                },
+                            },
+                            {
+                                type: "text",
+                                text: `Kamu adalah asisten keuangan. Analisis gambar ini (struk belanja, nota, atau catatan keuangan).
 
 Ekstrak informasi berikut dan jawab HANYA dalam format JSON, tanpa teks lain:
 {
@@ -79,24 +85,19 @@ Aturan:
 - Jika total tidak jelas, ambil angka terbesar yang terlihat
 - note berisi nama toko/merchant jika ada
 - Jawab HANYA JSON, tidak ada penjelasan lain`,
-                  },
+                            },
+                        ],
+                    },
                 ],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.1,
-              maxOutputTokens: 256,
-            },
-          }),
+                max_tokens: 256,
+                temperature: 0.1,
+            }),
         }
-      )
-
-      if (!response.ok) throw new Error(`Gemini error: ${response.status}`)
-
-      const data = await response.json()
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ""
-      const cleanText = text.replace(/```json|```/g, "").trim()
-      const result: ScanResult = JSON.parse(cleanText)
+    )
+    const data = await response.json()
+    const text = data.choices?.[0]?.message?.content || ""
+    const cleanText = text.replace(/```json|```/g, "").trim()
+    const result: ScanResult = JSON.parse(cleanText)
 
       if (!result.amount && !result.category) {
         throw new Error("Tidak bisa membaca struk. Coba foto lebih jelas.")
