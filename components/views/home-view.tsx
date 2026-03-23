@@ -284,9 +284,8 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
             onClose={() => setShowScan(false)}
             onScanComplete={(result) => {
               setShowScan(false)
-              // Simpan result dan redirect ke form
               sessionStorage.setItem("scan_result", JSON.stringify(result))
-              router.push("/features/daily-log")
+              router.push("/features/scan-confirm") // ← GANTI INI
             }}
           />
         )}
