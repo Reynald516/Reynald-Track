@@ -3,6 +3,7 @@
 "use client"
 
 import { ScanOverlay } from "@/components/scan/scan-overlay"
+import { QuickInput } from "@/components/quick-input"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AppHeader } from "@/components/app-header"
@@ -242,6 +243,13 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
             buttonText="Mulai Catat"
             onAction={handleStartLog}
           />
+        </section>
+
+        <section className="space-y-2">
+          <h3 className="text-[0.7rem] font-black text-foreground/60 uppercase tracking-[0.12em] px-1">
+            Catat Cepat
+          </h3>
+          <QuickInput />
         </section>
 
         <section>
