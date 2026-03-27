@@ -1,9 +1,12 @@
+// app/features/scan-confirm/page.tsx
+
 "use client"
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase/client"
 import { ChevronLeft, Loader2 } from "lucide-react"
+import { useInsightToast } from "@/hooks/use-insight-toast"
 
 const CATEGORY_ICONS: Record<string, string> = {
   // Expense
@@ -25,6 +28,7 @@ export default function ScanConfirmPage() {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState(false)
+  const { showInsight } = useInsightToast()
 
   // Data dari scan
   const [type, setType] = useState<"expense" | "income">("expense")
@@ -108,6 +112,7 @@ export default function ScanConfirmPage() {
       }
 
       setDone(true)
+      showInsight({ amount, type, category, note })
       setTimeout(() => {
         router.replace("/")
       }, 1500)

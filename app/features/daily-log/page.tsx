@@ -10,6 +10,7 @@ import { TransactionForm } from "@/components/daily-log/transaction-form"
 import { InlineMoodSelector } from "@/components/daily-log/inline-mood-selector"
 import { NextDecision } from "@/components/daily-log/next-decision"
 import { supabase } from "@/lib/supabase/client"
+import { useInsightToast } from "@/hooks/use-insight-toast"
 
 import {
   AlertDialog,
@@ -34,6 +35,7 @@ export default function DailyLogPage() {
   const [currentTransaction, setCurrentTransaction] = useState<Transaction | null>(null)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [showExitDialog, setShowExitDialog] = useState(false)
+  const { showInsight } = useInsightToast()
 
   // ✅ KHUSUS FAST ADD CONFIRMATION
   const [showFastSuccess, setShowFastSuccess] = useState(false)
@@ -78,20 +80,22 @@ export default function DailyLogPage() {
     setCurrentTransaction(transaction)
     setTransactions((prev) => [...prev, transaction])
     setHasUnsavedChanges(false)
+    showInsight({
+      amount: transaction.amount,
+      type: transaction.type as "income" | "expense",
+      category: transaction.category,
+      note: transaction.notes ?? transaction.note ?? "",
+    })
 
-    // 🔒 KHUSUS SIMPAN & TAMBAH LAGI
     if (addAnother) {
       setShowFastSuccess(true)
-
       setTimeout(() => {
         setShowFastSuccess(false)
         setFlowState("transaction")
       }, 900)
-
       return
     }
 
-    // 🔒 FLOW SIMPAN NORMAL — TIDAK DIUBAH
     setFlowState("mood")
   }
 

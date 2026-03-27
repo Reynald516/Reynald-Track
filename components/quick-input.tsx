@@ -1,6 +1,7 @@
 // components/quick-input.tsx
 "use client"
 
+import { useInsightToast } from "@/hooks/use-insight-toast"
 import { useState, useRef, useEffect } from "react"
 import { supabase } from "@/lib/supabase/client"
 
@@ -24,6 +25,7 @@ export function QuickInput({ walletId, onSuccess }: { walletId?: string, onSucce
   const [feedback, setFeedback] = useState<string | null>(null)
   const [placeholder, setPlaceholder] = useState(PLACEHOLDERS[0])
   const inputRef = useRef<HTMLInputElement>(null)
+  const { showInsight } = useInsightToast()
 
   // Auto focus + rotate placeholder
   useEffect(() => {
@@ -62,7 +64,12 @@ export function QuickInput({ walletId, onSuccess }: { walletId?: string, onSucce
         setFeedback(data.feedback)
         setValue("")
         onSuccess?.()
-        // Clear feedback after 3s
+        showInsight({
+          amount: data.parsed.amount,
+          type: data.parsed.type,
+          category: data.parsed.category,
+          note: data.parsed.note,
+        })
         setTimeout(() => setFeedback(null), 3000)
       } else {
         setFeedback(`❌ ${data.message}`)
