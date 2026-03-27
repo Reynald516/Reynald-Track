@@ -249,7 +249,7 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
           <h3 className="text-[0.7rem] font-black text-foreground/60 uppercase tracking-[0.12em] px-1">
             Catat Cepat
           </h3>
-          <QuickInput />
+          <QuickInput onSuccess={refresh} />
         </section>
 
         <section>

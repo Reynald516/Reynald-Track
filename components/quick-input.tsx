@@ -18,7 +18,7 @@ const PLACEHOLDERS = [
   'cth: "kopi 18 ribu"',
 ]
 
-export function QuickInput({ walletId }: { walletId?: string }) {
+export function QuickInput({ walletId, onSuccess }: { walletId?: string, onSuccess?: () => void }) {
   const [value, setValue] = useState("")
   const [loading, setLoading] = useState(false)
   const [feedback, setFeedback] = useState<string | null>(null)
@@ -61,6 +61,7 @@ export function QuickInput({ walletId }: { walletId?: string }) {
       if (data.status === "success") {
         setFeedback(data.feedback)
         setValue("")
+        onSuccess?.()
         // Clear feedback after 3s
         setTimeout(() => setFeedback(null), 3000)
       } else {
