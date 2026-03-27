@@ -35,7 +35,7 @@ export function useInsightToast() {
           toast({
             title: "💡 RTR insight",
             description: data.insight,
-            duration: 5000,
+            duration: 8000,
           })
         }, 500)
       }
