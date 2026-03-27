@@ -47,11 +47,10 @@ export function QuickInput({ walletId }: { walletId?: string }) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_RTR_ENGINE_URL}/quick-input`, {
+      const res = await fetch(`/api/ai/quick-input`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: user.id,
           raw: value.trim(),
           wallet_id: walletId ?? null,
         }),
