@@ -14,20 +14,16 @@ export const metadata: Metadata = {
   title: "ReynaldTrack - Smart Finance Control",
   description: "Emotion-aware personal finance tracking with AI-powered insights",
   generator: "v0.app",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "RTR",
+  },
   icons: {
     icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
+      { url: "/icons/icon-192.png" },
+      { url: "/icons/icon-512.png" },
     ],
     apple: "/apple-icon.png",
   },
@@ -40,13 +36,27 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id" className="dark">
+      <head>
+        <meta name="theme-color" content="#000000" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
       <body className="font-sans antialiased">
         {children}
-
-        {/* 🔔 GLOBAL TOAST */}
         <Toaster />
-
         <Analytics />
+
+        {/* PWA Service Worker */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                })
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   )
