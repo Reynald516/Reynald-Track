@@ -15,7 +15,7 @@ export function FloatingActionButton({ onAdd, onManage }: FloatingActionButtonPr
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="fixed bottom-40 right-4 z-50 md:bottom-10">
+    <div className="fixed bottom-52 right-6 z-50 md:bottom-10">
       <AnimatePresence>
         {open && (
           <>
