@@ -2,7 +2,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { BottomNavigation } from "@/components/bottom-navigation"
 import { HomeView } from "@/components/views/home-view"
 import { WalletsView } from "@/components/views/wallets-view"
@@ -11,6 +11,7 @@ import { InsightsView } from "@/components/views/insights-view"
 import { MoreView } from "@/components/views/more-view"
 import { getTodayCashflow } from "@/components/views/home-actions"
 import { FloatingActionButton } from "@/components/shared/FloatingActionButton"
+import { StickyQuickInput } from "@/components/sticky-quick-input"
 import { useRouter } from "next/navigation"
 
 type Tab = "home" | "wallets" | "budget" | "insights" | "more"
@@ -18,6 +19,8 @@ type Tab = "home" | "wallets" | "budget" | "insights" | "more"
 export default function ReynaldTrackApp() {
   const [isDarkMode, setIsDarkMode] = useState(true)
   const [activeTab, setActiveTab] = useState<Tab>("home")
+  const [refreshKey, setRefreshKey] = useState(0)
+  const handleQuickInputSuccess = useCallback(() => setRefreshKey(k => k + 1), [])
   const router = useRouter()
 
   const toggleTheme = () => {
@@ -27,14 +30,20 @@ export default function ReynaldTrackApp() {
   
   return (
     <>
-      <main className="min-h-screen bg-background pb-20">
+      <main className="min-h-screen bg-background pb-36">
         <div className="max-w-md lg:max-w-5xl mx-auto">
-          {activeTab === "home" && <HomeView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
+          {activeTab === "home" && (
+            <HomeView key={refreshKey} isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />
+          )}
           {activeTab === "wallets" && <WalletsView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
           {activeTab === "budget" && <BudgetView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
           {activeTab === "insights" && <InsightsView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
           {activeTab === "more" && <MoreView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
         </div>
+
+        {activeTab === "home" && (
+          <StickyQuickInput onSuccess={handleQuickInputSuccess} />
+        )}
         
         <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
         <FloatingActionButton

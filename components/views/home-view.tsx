@@ -3,7 +3,6 @@
 "use client"
 
 import { ScanOverlay } from "@/components/scan/scan-overlay"
-import { QuickInput } from "@/components/quick-input"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AppHeader } from "@/components/app-header"
@@ -44,6 +43,7 @@ interface HomeViewProps {
 
 export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
   const [timeRange, setTimeRange] = useState<"daily" | "monthly">("daily")
+  const [selectedBar, setSelectedBar] = useState<number | null>(null)
   const router = useRouter()
 
   const { transactions, loading, refresh, error } = useTransactions()
@@ -90,10 +90,25 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
       net: income - expense,
     }
   }, [filteredTransactions])
-
-  function stableHeight(i: number) {
-  return 20 + ((i * 17) % 60) // hasil selalu sama
+  
+  const chartData = useMemo(() => {
+  const days = 14
+  const result = []
+  const today = new Date()
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today)
+    d.setDate(today.getDate() - i)
+    const dateStr = d.toISOString().slice(0, 10)
+    const dayLabel = d.toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" })
+    const dayTxs = (transactions ?? []).filter(t => (t.created_at ?? "").slice(0, 10) === dateStr)
+    const dayExpense = dayTxs.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0)
+    const dayIncome = dayTxs.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0)
+    result.push({ dateStr, dayLabel, expense: dayExpense, income: dayIncome, isToday: i === 0 })
   }
+  return result
+}, [transactions])
+
+const maxVal = useMemo(() => Math.max(...chartData.map(d => d.expense + d.income), 1), [chartData])
 
   const [formattedDate, setFormattedDate] = useState("")
   
@@ -210,28 +225,38 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
 
           <Card className="border-0 shadow-soft-lg bg-card card-float overflow-hidden">
             <CardContent className="p-6">
-              <div className="h-36 flex items-end justify-between gap-1.5">
-                {Array.from({ length: 14 }).map((_, i) => {
-                  const height = stableHeight(i)
-                  const isToday = i === 13
-                  return (
-                    <div
-                      key={i}
-                      className={`flex-1 rounded-t-lg transition-smooth hover:opacity-80 ${
-                        isToday ? "bg-accent shadow-soft-sm" : "bg-muted-foreground/15"
-                      }`}
-                      style={{
-                        height: `${height}%`,
-                        minHeight: "8px",
-                      }}
-                    />
-                  )
-                })}
-              </div>
-              <p className="text-[0.7rem] text-center text-muted-foreground mt-4 font-semibold tracking-wide opacity-60">
-                {timeRange === "daily" ? "14 hari terakhir" : "12 bulan terakhir"}
-              </p>
-            </CardContent>
+  {selectedBar !== null && chartData[selectedBar] && (
+    <div className="mb-4 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20 animate-fade-in">
+      <p className="text-xs font-bold text-accent mb-1">{chartData[selectedBar].dayLabel}</p>
+      <div className="flex gap-4 text-xs text-foreground/80">
+        <span>📈 {formatRupiah(chartData[selectedBar].income)}</span>
+        <span>📉 {formatRupiah(chartData[selectedBar].expense)}</span>
+      </div>
+    </div>
+  )}
+  <div className="h-36 flex items-end justify-between gap-1">
+    {chartData.map((day, i) => {
+      const total = day.expense + day.income
+      const heightPct = total > 0 ? Math.max((total / maxVal) * 100, 8) : 8
+      const isSelected = selectedBar === i
+      return (
+        <button
+          key={i}
+          onClick={() => setSelectedBar(isSelected ? null : i)}
+          className={`flex-1 rounded-t-lg transition-all duration-200 ${
+            day.isToday ? "bg-accent shadow-soft-sm"
+            : isSelected ? "bg-accent/60"
+            : "bg-muted-foreground/15 hover:bg-muted-foreground/30"
+          }`}
+          style={{ height: `${heightPct}%`, minHeight: "8px" }}
+        />
+      )
+    })}
+  </div>
+  <p className="text-[0.7rem] text-center text-muted-foreground mt-4 font-semibold tracking-wide opacity-60">
+    {selectedBar !== null ? "Tap bar lagi untuk tutup" : "14 hari terakhir — tap untuk detail"}
+  </p>
+</CardContent>
           </Card>
         </section>
 
@@ -243,13 +268,6 @@ export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
             buttonText="Mulai Catat"
             onAction={handleStartLog}
           />
-        </section>
-
-        <section className="space-y-2">
-          <h3 className="text-[0.7rem] font-black text-foreground/60 uppercase tracking-[0.12em] px-1">
-            Catat Cepat
-          </h3>
-          <QuickInput onSuccess={refresh} />
         </section>
 
         <section>
