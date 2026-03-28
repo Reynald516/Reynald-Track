@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation"
 type Tab = "home" | "wallets" | "budget" | "insights" | "more"
 
 export default function ReynaldTrackApp() {
-  const [isDarkMode, setIsDarkMode] = useState(true)
+  const [isDarkMode, setIsDarkMode] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>("home")
   const [refreshKey, setRefreshKey] = useState(0)
   const handleQuickInputSuccess = useCallback(() => setRefreshKey(k => k + 1), [])

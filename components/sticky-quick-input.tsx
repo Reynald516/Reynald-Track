@@ -114,7 +114,7 @@ export function StickyQuickInput({
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           placeholder={placeholder}
           disabled={loading}
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50"
+          className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground/50"
         />
         <button
           onClick={handleSubmit}
