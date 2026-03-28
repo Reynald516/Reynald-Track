@@ -41,11 +41,6 @@ export default function ReynaldTrackApp() {
           {activeTab === "more" && <MoreView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
         </div>
 
-        {activeTab === "home" && (
-          <StickyQuickInput onSuccess={handleQuickInputSuccess} />
-        )}
-        
-        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
         <FloatingActionButton
           onAdd={() => {
             router.push("/features/daily-log")
@@ -54,6 +49,12 @@ export default function ReynaldTrackApp() {
             router.push("/transactions")
           }}
         />
+
+        {activeTab === "home" && (
+          <StickyQuickInput onSuccess={handleQuickInputSuccess} />
+        )}
+        
+        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       </main>
     </>
   )
