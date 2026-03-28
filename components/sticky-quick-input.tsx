@@ -81,7 +81,7 @@ export function StickyQuickInput({
 
   return (
     // bottom-16 = tepat di atas bottom nav (h-16)
-    <div className="fixed bottom-20 left-0 right-0 z-50 max-w-md mx-auto px-4 pb-3">
+    <div id="tutorial-quick-input" className="fixed bottom-20 left-0 right-0 z-50 max-w-md mx-auto px-4 pb-3">
       {/* Feedback toast */}
       {feedback && (
         <div className="mb-2 px-4 py-2 rounded-xl bg-card shadow-soft text-sm animate-fade-in border border-border">

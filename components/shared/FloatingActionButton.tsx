@@ -1,3 +1,5 @@
+// components/shared/FloatingActionButton.tsx
+
 "use client"
 
 import { useState } from "react"
@@ -15,7 +17,7 @@ export function FloatingActionButton({ onAdd, onManage }: FloatingActionButtonPr
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="fixed bottom-52 right-6 z-50 md:bottom-10">
+    <div id="tutorial-fab" className="fixed bottom-52 right-6 z-50 md:bottom-10">
       <AnimatePresence>
         {open && (
           <>

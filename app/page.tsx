@@ -12,6 +12,7 @@ import { MoreView } from "@/components/views/more-view"
 import { getTodayCashflow } from "@/components/views/home-actions"
 import { FloatingActionButton } from "@/components/shared/FloatingActionButton"
 import { StickyQuickInput } from "@/components/sticky-quick-input"
+import { TutorialOverlay } from "@/components/tutorial-overlay"
 import { useRouter } from "next/navigation"
 
 type Tab = "home" | "wallets" | "budget" | "insights" | "more"
@@ -20,6 +21,10 @@ export default function ReynaldTrackApp() {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>("home")
   const [refreshKey, setRefreshKey] = useState(0)
+  const [showTutorial, setShowTutorial] = useState(() => {
+    if (typeof window === "undefined") return false
+    return !localStorage.getItem("seen_tutorial")
+  })
   const handleQuickInputSuccess = useCallback(() => setRefreshKey(k => k + 1), [])
   const router = useRouter()
 
@@ -55,6 +60,15 @@ export default function ReynaldTrackApp() {
         )}
         
         <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+
+        {showTutorial && (
+          <TutorialOverlay
+            onDone={() => {
+              localStorage.setItem("seen_tutorial", "true")
+              setShowTutorial(false)
+            }}
+          />
+        )}
       </main>
     </>
   )

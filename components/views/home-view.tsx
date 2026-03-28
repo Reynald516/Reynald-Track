@@ -155,7 +155,7 @@ const maxVal = useMemo(() => Math.max(...chartData.map(d => d.expense + d.income
 
       <div className="px-5 space-y-8 pt-6 pb-16">
         {/* Quick Actions section */}
-        <section>
+        <section id="tutorial-quick-actions">
           <h3 className="text-[0.7rem] font-black text-foreground/60 uppercase tracking-[0.12em] mb-4 px-1">
             Quick Actions
           </h3>
@@ -186,7 +186,7 @@ const maxVal = useMemo(() => Math.max(...chartData.map(d => d.expense + d.income
           </div>
         </section>
 
-        <section>
+        <section id="tutorial-cashflow">
           <div className="text-center mb-6">
             <p className="text-[0.65rem] text-muted-foreground font-bold uppercase tracking-[0.15em] mb-3 opacity-70">
               Cash Flow Hari Ini

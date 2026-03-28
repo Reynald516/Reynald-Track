@@ -1,3 +1,5 @@
+// components/bottom-navigation.tsx
+
 "use client"
 
 import { Home, Wallet, PieChart, TrendingUpIcon, MoreHorizontal } from "lucide-react"
