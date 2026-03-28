@@ -1,3 +1,5 @@
+// step-3.tsx
+
 "use client"
 
 interface OnboardingStep3Props {

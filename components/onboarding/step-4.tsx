@@ -1,3 +1,5 @@
+// components/onboarding/step-4.tsx
+
 "use client"
 
 interface OnboardingStep4Props {

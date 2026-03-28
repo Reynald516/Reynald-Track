@@ -1,3 +1,5 @@
+// components/onboarding/step-5.tsx
+
 "use client"
 
 interface OnboardingStep5Props {
