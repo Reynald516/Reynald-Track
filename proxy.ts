@@ -1,11 +1,13 @@
+// proxy.ts
+
 import { NextResponse, type NextRequest } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // ✅ HARD BYPASS API
-  if (pathname.startsWith("/api")) {
+  // Bypass static & api
+  if (pathname.startsWith("/api") || pathname.startsWith("/_next")) {
     return NextResponse.next()
   }
 
@@ -16,9 +18,7 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
+        getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, options)
@@ -28,33 +28,28 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  const isProtected =
-    pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/app")
+  const isPublic = [
+    "/pre-onboarding",
+    "/login",
+    "/signup",
+    "/auth/callback",
+  ].some((r) => pathname.startsWith(r))
 
-  const isAuthPage =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/signup")
-
-  if (isProtected && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/login"
-    return NextResponse.redirect(url)
+  // Sudah login → jangan masuk public route, langsung ke app
+  if (user && isPublic && !pathname.startsWith("/auth/callback")) {
+    return NextResponse.redirect(new URL("/", request.url))
   }
 
-  if (isAuthPage && user) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/app-gate"
-    return NextResponse.redirect(url)
+  // Belum login → redirect ke pre-onboarding
+  if (!user && !isPublic) {
+    return NextResponse.redirect(new URL("/pre-onboarding", request.url))
   }
 
   return response
 }
 
 export const config = {
-  matcher: ["/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 }
