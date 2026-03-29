@@ -11,13 +11,19 @@ import { motion, AnimatePresence } from "framer-motion"
 interface FloatingActionButtonProps {
   onAdd: () => void
   onManage: () => void
+  isHome?: boolean
 }
 
-export function FloatingActionButton({ onAdd, onManage }: FloatingActionButtonProps) {
+export function FloatingActionButton({ onAdd, onManage, isHome = false }: FloatingActionButtonProps) {
   const [open, setOpen] = useState(false)
 
   return (
-    <div id="tutorial-fab" className="fixed bottom-52 right-6 z-50 md:bottom-10">
+    <div
+      id="tutorial-fab"
+      className={`fixed right-6 z-50 md:bottom-10 transition-all duration-300 ${
+        isHome ? "bottom-52" : "bottom-24"
+      }`}
+    >
       <AnimatePresence>
         {open && (
           <>

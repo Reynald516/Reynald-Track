@@ -60,12 +60,9 @@ export default function ReynaldTrackApp() {
         </div>
 
         <FloatingActionButton
-          onAdd={() => {
-            router.push("/features/daily-log")
-          }}
-          onManage={() => {
-            router.push("/transactions")
-          }}
+          isHome={activeTab === "home"}
+          onAdd={() => router.push("/features/daily-log")}
+          onManage={() => router.push("/transactions")}
         />
 
         {activeTab === "home" && (
