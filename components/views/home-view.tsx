@@ -225,42 +225,42 @@ const maxVal = useMemo(() => Math.max(...chartData.map(d => d.expense + d.income
 
           <Card className="border-0 shadow-soft-lg bg-card card-float overflow-hidden">
             <CardContent className="p-6">
-  {selectedBar !== null && chartData[selectedBar] && (
-    <div className="mb-4 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20 animate-fade-in">
-      <p className="text-xs font-bold text-accent mb-1">{chartData[selectedBar].dayLabel}</p>
-      <div className="flex gap-4 text-xs text-foreground/80">
-        <span>📈 {formatRupiah(chartData[selectedBar].income)}</span>
-        <span>📉 {formatRupiah(chartData[selectedBar].expense)}</span>
-      </div>
-    </div>
-  )}
-  <div className="h-36 flex items-end justify-between gap-1">
-    {chartData.map((day, i) => {
-      const total = day.expense + day.income
-      const heightPct = total > 0 ? Math.max((total / maxVal) * 100, 8) : 8
-      const isSelected = selectedBar === i
-      return (
-        <button
-          key={i}
-          onClick={() => setSelectedBar(isSelected ? null : i)}
-          className={`flex-1 rounded-t-lg transition-all duration-200 ${
-            day.isToday ? "bg-accent shadow-soft-sm"
-            : isSelected ? "bg-accent/60"
-            : "bg-muted-foreground/15 hover:bg-muted-foreground/30"
-          }`}
-          style={{ height: `${heightPct}%`, minHeight: "8px" }}
-        />
-      )
-    })}
-  </div>
-  <p className="text-[0.7rem] text-center text-muted-foreground mt-4 font-semibold tracking-wide opacity-60">
-    {selectedBar !== null ? "Tap bar lagi untuk tutup" : "14 hari terakhir — tap untuk detail"}
-  </p>
-</CardContent>
+              {selectedBar !== null && chartData[selectedBar] && (
+                <div className="mb-4 px-4 py-3 rounded-xl bg-accent/10 border border-accent/20 animate-fade-in">
+                  <p className="text-xs font-bold text-accent mb-1">{chartData[selectedBar].dayLabel}</p>
+                  <div className="flex gap-4 text-xs text-foreground/80">
+                    <span>📈 {formatRupiah(chartData[selectedBar].income)}</span>
+                    <span>📉 {formatRupiah(chartData[selectedBar].expense)}</span>
+                  </div>
+                </div>
+              )}
+              <div className="h-36 flex items-end justify-between gap-1">
+                {chartData.map((day, i) => {
+                  const total = day.expense + day.income
+                  const heightPct = total > 0 ? Math.max((total / maxVal) * 100, 8) : 8
+                  const isSelected = selectedBar === i
+                  return (
+                    <button
+                  key={i}
+                  onClick={() => setSelectedBar(isSelected ? null : i)}
+                  className={`flex-1 rounded-t-lg transition-all duration-200 ${
+                    day.isToday ? "bg-accent shadow-soft-sm"
+                    : isSelected ? "bg-accent/60"
+                    : "bg-muted-foreground/15 hover:bg-muted-foreground/30"
+                  }`}          
+                style={{ height: `${heightPct}%`, minHeight: "8px" }}
+              />
+            )
+          })}
+          </div>
+          <p className="text-[0.7rem] text-center text-muted-foreground mt-4 font-semibold tracking-wide opacity-60">
+            {selectedBar !== null ? "Tap bar lagi untuk tutup" : "14 hari terakhir — tap untuk detail"}
+          </p>
+        </CardContent>
           </Card>
         </section>
 
-        <section className="py-4">
+        <section id="tutorial-daily-log" className="py-4">
           <PrimaryActionCard
             icon={Sparkles}
             title="Catat hari ini"

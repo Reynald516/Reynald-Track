@@ -2,7 +2,7 @@
 
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { BottomNavigation } from "@/components/bottom-navigation"
 import { HomeView } from "@/components/views/home-view"
 import { WalletsView } from "@/components/views/wallets-view"
@@ -21,17 +21,30 @@ export default function ReynaldTrackApp() {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>("home")
   const [refreshKey, setRefreshKey] = useState(0)
-  const [showTutorial, setShowTutorial] = useState(() => {
-    if (typeof window === "undefined") return false
-    return !localStorage.getItem("seen_tutorial")
-  })
   const handleQuickInputSuccess = useCallback(() => setRefreshKey(k => k + 1), [])
   const router = useRouter()
+
+  const [showTutorial, setShowTutorial] = useState(() => {
+    if (typeof window === "undefined") return false
+    return !localStorage.getItem("seen_tutorial_home")
+  })
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode)
     document.documentElement.classList.toggle("dark")
   }
+
+  useEffect(() => {
+    if (activeTab === "budget" && !localStorage.getItem("seen_tutorial_budget")) {
+      setShowTutorial(true)
+    } else if (activeTab === "insights" && !localStorage.getItem("seen_tutorial_insights")) {
+      setShowTutorial(true)
+    } else if (activeTab === "home" && !localStorage.getItem("seen_tutorial_home")) {
+      setShowTutorial(true)
+    } else {
+      setShowTutorial(false)
+    }
+  }, [activeTab])
   
   return (
     <>
@@ -63,8 +76,15 @@ export default function ReynaldTrackApp() {
 
         {showTutorial && (
           <TutorialOverlay
+            currentPage={activeTab === "budget" ? "budget" : activeTab === "insights" ? "insights" : "home"}
             onDone={() => {
-              localStorage.setItem("seen_tutorial", "true")
+              if (activeTab === "home") {
+                localStorage.setItem("seen_tutorial_home", "true")
+              } else if (activeTab === "budget") {
+                localStorage.setItem("seen_tutorial_budget", "true")
+              } else if (activeTab === "insights") {
+                localStorage.setItem("seen_tutorial_insights", "true")
+              }
               setShowTutorial(false)
             }}
           />

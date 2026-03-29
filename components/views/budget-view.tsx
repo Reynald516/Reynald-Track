@@ -200,7 +200,7 @@ const monthKey = useMemo(
           </CardContent>
         </Card>
 
-        <div className="space-y-3">
+        <div id="tutorial-budget-categories" className="space-y-3">
           <h3 className="text-sm font-semibold text-muted-foreground px-1">
             Kategori
           </h3>

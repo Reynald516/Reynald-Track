@@ -304,7 +304,7 @@ export function InsightsView({ isDarkMode, onToggleTheme }: InsightsViewProps) {
               </div>
 
               {/* Input */}
-              <form onSubmit={handleSubmit} className="relative">
+              <form id="tutorial-chat-input" onSubmit={handleSubmit} className="relative">
                 <input
                   value={question}
                   onChange={e => setQuestion(e.target.value)}
