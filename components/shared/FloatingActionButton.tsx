@@ -20,7 +20,7 @@ export function FloatingActionButton({ onAdd, onManage, isHome = false }: Floati
   return (
     <div
       id="tutorial-fab"
-      className={`fixed right-6 z-50 md:bottom-10 transition-all duration-300 ${
+      className={`fixed right-6 z-50 md:bottom-15 transition-all duration-300 ${
         isHome ? "bottom-52" : "bottom-24"
       }`}
     >
