@@ -150,14 +150,6 @@ const monthKey = useMemo(
     return "Aman"
   }
 
-  if (loading) {
-    return (
-      <div className="px-5 py-10 text-sm text-muted-foreground">
-        Memuat budget...
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-6">
       <AppHeader
@@ -204,50 +196,56 @@ const monthKey = useMemo(
           <h3 className="text-sm font-semibold text-muted-foreground px-1">
             Kategori
           </h3>
-          <div className="grid gap-3">
-            {categories.map((category, i) => {
-              const percentage =
-                category.budget === 0
-                  ? 0
-                  : (category.spent / category.budget) * 100
+          {loading ? (
+            <div className="py-6 text-sm text-muted-foreground text-center">
+              Memuat kategori...
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {categories.map((category, i) => {
+                const percentage =
+                  category.budget === 0
+                    ? 0
+                    : (category.spent / category.budget) * 100
 
-              return (
-                <Card
-                  key={i}
-                  className="border-0 shadow-soft-md card-float cursor-pointer hover:shadow-soft-lg transition-smooth"
-                  onClick={() =>
-                    router.push(`/budget/${encodeURIComponent(category.rawCategory)}`)
-                  }
-                >
-                  <CardContent className="p-5 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{category.icon}</span>
-                        <div>
-                          <p className="font-semibold tracking-tight">{category.name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {category.budget === 0
-                              ? "Belum diatur — tap untuk set budget"
-                              : `Rp ${category.spent.toLocaleString("id-ID")} / Rp ${category.budget.toLocaleString("id-ID")}`}
-                          </p>
+                return (
+                  <Card
+                    key={i}
+                    className="border-0 shadow-soft-md card-float cursor-pointer hover:shadow-soft-lg transition-smooth"
+                    onClick={() =>
+                      router.push(`/budget/${encodeURIComponent(category.rawCategory)}`)
+                    }
+                  >
+                    <CardContent className="p-5 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{category.icon}</span>
+                          <div>
+                            <p className="font-semibold tracking-tight">{category.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {category.budget === 0
+                                ? "Belum diatur — tap untuk set budget"
+                                : `Rp ${category.spent.toLocaleString("id-ID")} / Rp ${category.budget.toLocaleString("id-ID")}`}
+                            </p>
+                          </div>
                         </div>
+                        <span className="text-xs font-semibold text-muted-foreground">
+                          {category.budget === 0 ? "Atur" : getStatusMessage(percentage)}
+                        </span>
                       </div>
-                      <span className="text-xs font-semibold text-muted-foreground">
-                        {category.budget === 0 ? "Atur" : getStatusMessage(percentage)}
-                      </span>
-                    </div>
 
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-smooth ${getStatusColor(percentage)}`}
-                        style={{ width: `${Math.min(percentage, 100)}%` }}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-smooth ${getStatusColor(percentage)}`}
+                          style={{ width: `${Math.min(percentage, 100)}%` }}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
