@@ -3,11 +3,11 @@
 "use client"
 
 import { ScanOverlay } from "@/components/scan/scan-overlay"
+import { FinancialReportCard } from "@/components/financial-report-card"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { AppHeader } from "@/components/app-header"
 import { PrimaryActionCard } from "@/components/primary-action-card"
-import { SummaryCard } from "@/components/summary-card"
 import { DailyReportCard } from "@/components/daily-report-card"
 import { Card, CardContent } from "@/components/ui/card"
 import { useTransactions } from "@/hooks/use-transaction";
@@ -15,9 +15,6 @@ import { formatRupiah } from "@/lib/format"
 import { useMemo } from "react";
 import {
   Sparkles,
-  ArrowUpRight,
-  ArrowDownRight,
-  Wallet,
   Camera,
   Zap,
   Flame,
@@ -272,33 +269,8 @@ const maxVal = useMemo(() => Math.max(...chartData.map(d => d.expense + d.income
         </section>
 
         <section>
-          <h3 className="text-[0.7rem] font-black text-foreground/60 uppercase tracking-[0.12em] mb-4 px-1">
-            Ringkasan Hari Ini
-          </h3>
-          <div className="grid gap-3">
-            <SummaryCard
-              icon={ArrowDownRight}
-              label="Pemasukan"
-              value={loading ? "—" : formatRupiah(income)}
-              variant="income"
-            />
-            
-            <SummaryCard
-              icon={ArrowUpRight}
-              label="Pengeluaran"
-              value={loading ? "—" : formatRupiah(expense)}
-              variant="expense"
-            />
-            
-            <SummaryCard
-              icon={Wallet}
-              label="Net"
-              value={loading ? "—" : formatRupiah(net)}
-              variant="neutral"
-            />
-          </div>
+          <FinancialReportCard transactions={transactions} loading={loading} />
         </section>
-
         
         <section>
           <DailyReportCard refreshKey={refreshKey} />
