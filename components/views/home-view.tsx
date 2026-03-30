@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { AppHeader } from "@/components/app-header"
 import { PrimaryActionCard } from "@/components/primary-action-card"
 import { SummaryCard } from "@/components/summary-card"
-import { AIInsightCard } from "@/components/ai-insight-card"
+import { DailyReportCard } from "@/components/daily-report-card"
 import { Card, CardContent } from "@/components/ui/card"
 import { useTransactions } from "@/hooks/use-transaction";
 import { formatRupiah } from "@/lib/format"
@@ -39,9 +39,10 @@ type QuickAction = {
 interface HomeViewProps {
   isDarkMode: boolean
   onToggleTheme: () => void
+  refreshKey?: number
 }
 
-export function HomeView({ isDarkMode, onToggleTheme }: HomeViewProps) {
+export function HomeView({ isDarkMode, onToggleTheme, refreshKey }: HomeViewProps) {
   const [timeRange, setTimeRange] = useState<"daily" | "monthly">("daily")
   const [selectedBar, setSelectedBar] = useState<number | null>(null)
   const router = useRouter()
@@ -298,11 +299,9 @@ const maxVal = useMemo(() => Math.max(...chartData.map(d => d.expense + d.income
           </div>
         </section>
 
+        
         <section>
-          <AIInsightCard
-            title="AI Insight hari ini"
-            message="Belum ada pola yang terdeteksi. Catat transaksimu untuk mendapat insight personal."
-          />
+          <DailyReportCard refreshKey={refreshKey} />
         </section>
 
         {showScan && (

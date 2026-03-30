@@ -51,7 +51,7 @@ export default function ReynaldTrackApp() {
       <main className="min-h-screen bg-background pb-36">
         <div className="max-w-md lg:max-w-5xl mx-auto">
           {activeTab === "home" && (
-            <HomeView key={refreshKey} isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />
+            <HomeView key={refreshKey} refreshKey={refreshKey} isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />
           )}
           {activeTab === "wallets" && <WalletsView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
           {activeTab === "budget" && <BudgetView isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />}
