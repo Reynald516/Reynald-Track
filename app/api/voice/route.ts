@@ -36,12 +36,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Transcription failed", detail: err }, { status: 500 })
     }
 
-    if (!groqRes.ok) {
-      const err = await groqRes.text()
-      console.error("Groq error:", err)
-      return NextResponse.json({ error: "Transcription failed" }, { status: 500 })
-    }
-
     const data = await groqRes.json()
     return NextResponse.json({ transcript: data.text })
 
