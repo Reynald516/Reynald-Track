@@ -73,12 +73,14 @@ export function StickyQuickInput({
 
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript
+      console.log("🎤 transcript:", transcript)
       setValue(transcript)
       setIsListening(false)
-      // Auto submit setelah voice input
-      setTimeout(() => {
-        handleSubmitValue(transcript)
-      }, 300)
+      inputRef.current?.focus()
+    }
+    
+    recognition.onspeechend = () => {
+      recognitionRef.current?.stop()
     }
 
     recognition.onerror = () => {
