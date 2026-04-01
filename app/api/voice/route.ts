@@ -13,7 +13,11 @@ export async function POST(req: Request) {
 
     // Kirim ke Groq Whisper
     const groqForm = new FormData()
-    groqForm.append("file", audio, "audio.webm")
+    const contentType = audio.type || "audio/mp4"
+    const ext = contentType.includes("mp4") ? "mp4" 
+      : contentType.includes("ogg") ? "ogg" 
+      : "webm"
+    groqForm.append("file", audio, `audio.${ext}`)
     groqForm.append("model", "whisper-large-v3-turbo")
     groqForm.append("language", "id")
     groqForm.append("response_format", "json")
@@ -25,6 +29,12 @@ export async function POST(req: Request) {
       },
       body: groqForm,
     })
+
+    if (!groqRes.ok) {
+        const err = await groqRes.text()
+        console.error("Groq Whisper error:", err)
+        return NextResponse.json({ error: "Transcription failed", detail: err }, { status: 500 })
+    }
 
     if (!groqRes.ok) {
       const err = await groqRes.text()
