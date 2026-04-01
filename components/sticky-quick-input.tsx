@@ -83,7 +83,8 @@ export function StickyQuickInput({
       recognitionRef.current?.stop()
     }
 
-    recognition.onerror = () => {
+    recognition.onerror = (event: any) => {
+      console.log("🎤 error:", event.error, event.message)
       setIsListening(false)
       setFeedback("❌ Mikrofon gagal, coba lagi")
       setTimeout(() => setFeedback(null), 2000)
@@ -92,6 +93,9 @@ export function StickyQuickInput({
     recognition.onend = () => setIsListening(false)
 
     recognition.start()
+    
+    console.log("🎤 recognition started")
+    console.log("🎤 lang:", recognition.lang)
   }
 
   const stopVoice = () => {
