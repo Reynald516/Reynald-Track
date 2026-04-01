@@ -3,7 +3,7 @@
 
 import { useInsightToast } from "@/hooks/use-insight-toast"
 import { useState, useRef, useEffect } from "react"
-import { Send, Mic, MicOff } from "lucide-react"
+import { Send, Mic, MicOff, Loader2 } from "lucide-react"
 
 const QUICK_BUTTONS = [
   { label: "☕ Kopi", text: "kopi " },
@@ -31,20 +31,12 @@ export function StickyQuickInput({
   const [feedback, setFeedback] = useState<string | null>(null)
   const [placeholder, setPlaceholder] = useState(PLACEHOLDERS[0])
   const [isListening, setIsListening] = useState(false)
-  const [voiceSupported, setVoiceSupported] = useState(false)
+  const [isTranscribing, setIsTranscribing] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-  const recognitionRef = useRef<any>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const chunksRef = useRef<Blob[]>([])
   const { showInsight } = useInsightToast()
 
-  // Cek support Web Speech API
-  useEffect(() => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition
-    setVoiceSupported(!!SpeechRecognition)
-  }, [])
-
-  // Rotate placeholder
   useEffect(() => {
     const interval = setInterval(() => {
       setPlaceholder((prev) => {
@@ -55,59 +47,81 @@ export function StickyQuickInput({
     return () => clearInterval(interval)
   }, [])
 
-  const startVoice = () => {
-    const SpeechRecognition =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      chunksRef.current = []
 
-    if (!SpeechRecognition) return
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : MediaRecorder.isTypeSupported("audio/mp4")
+        ? "audio/mp4"
+        : "audio/ogg"
 
-    const recognition = new SpeechRecognition()
-    recognitionRef.current = recognition
+      const recorder = new MediaRecorder(stream, { mimeType })
+      mediaRecorderRef.current = recorder
 
-    recognition.lang = "id-ID"
-    recognition.continuous = false
-    recognition.interimResults = false
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data)
+      }
 
-    recognition.onstart = () => setIsListening(true)
+      recorder.onstop = async () => {
+        // Stop semua track mikrofon
+        stream.getTracks().forEach((t) => t.stop())
 
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript
-      console.log("🎤 transcript:", transcript)
-      setValue(transcript)
-      setIsListening(false)
-      inputRef.current?.focus()
+        const blob = new Blob(chunksRef.current, { type: mimeType })
+        await transcribeAudio(blob, mimeType)
+      }
+
+      recorder.start()
+      setIsListening(true)
+    } catch (err) {
+      setFeedback("❌ Izin mikrofon ditolak")
+      setTimeout(() => setFeedback(null), 3000)
     }
-    
-    recognition.onspeechend = () => {
-      recognitionRef.current?.stop()
-    }
-
-    recognition.onerror = (event: any) => {
-      console.log("🎤 error:", event.error, event.message)
-      setIsListening(false)
-      setFeedback("❌ Mikrofon gagal, coba lagi")
-      setTimeout(() => setFeedback(null), 2000)
-    }
-
-    recognition.onend = () => setIsListening(false)
-
-    recognition.start()
-    
-    console.log("🎤 recognition started")
-    console.log("🎤 lang:", recognition.lang)
   }
 
-  const stopVoice = () => {
-    recognitionRef.current?.stop()
+  const stopRecording = () => {
+    if (mediaRecorderRef.current?.state === "recording") {
+      mediaRecorderRef.current.stop()
+    }
     setIsListening(false)
   }
 
   const toggleVoice = () => {
     if (isListening) {
-      stopVoice()
+      stopRecording()
     } else {
-      startVoice()
+      startRecording()
+    }
+  }
+
+  const transcribeAudio = async (blob: Blob, mimeType: string) => {
+    setIsTranscribing(true)
+    try {
+      const ext = mimeType.includes("mp4") ? "mp4" : mimeType.includes("ogg") ? "ogg" : "webm"
+      const form = new FormData()
+      form.append("audio", blob, `audio.${ext}`)
+
+      const res = await fetch("/api/voice", {
+        method: "POST",
+        body: form,
+      })
+
+      const data = await res.json()
+
+      if (data.transcript) {
+        setValue(data.transcript)
+        inputRef.current?.focus()
+      } else {
+        setFeedback("❌ Gagal transkripsi, coba lagi")
+        setTimeout(() => setFeedback(null), 3000)
+      }
+    } catch {
+      setFeedback("❌ Gagal konek ke AI")
+      setTimeout(() => setFeedback(null), 3000)
+    } finally {
+      setIsTranscribing(false)
     }
   }
 
@@ -149,6 +163,8 @@ export function StickyQuickInput({
 
   const handleSubmit = () => handleSubmitValue(value)
 
+  const micBusy = isListening || isTranscribing
+
   return (
     <div id="tutorial-quick-input" className="fixed bottom-20 left-0 right-0 z-50 max-w-md mx-auto px-4 pb-3">
       {/* Feedback toast */}
@@ -158,7 +174,7 @@ export function StickyQuickInput({
         </div>
       )}
 
-      {/* Listening indicator */}
+      {/* Status indicator */}
       {isListening && (
         <div className="mb-2 px-4 py-2 rounded-xl bg-accent/10 border border-accent/30 text-sm animate-fade-in flex items-center gap-2">
           <div className="flex gap-0.5">
@@ -166,11 +182,18 @@ export function StickyQuickInput({
             <div className="w-1 h-3 bg-accent rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
             <div className="w-1 h-3 bg-accent rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
           </div>
-          <span className="text-accent font-medium text-xs">Mendengarkan... tap mic untuk stop</span>
+          <span className="text-accent font-medium text-xs">Merekam... tap mic untuk stop</span>
         </div>
       )}
 
-      {/* Quick buttons row */}
+      {isTranscribing && (
+        <div className="mb-2 px-4 py-2 rounded-xl bg-accent/10 border border-accent/30 text-sm animate-fade-in flex items-center gap-2">
+          <Loader2 className="w-3.5 h-3.5 text-accent animate-spin" />
+          <span className="text-accent font-medium text-xs">AI sedang transkripsi...</span>
+        </div>
+      )}
+
+      {/* Quick buttons */}
       <div className="flex gap-1.5 mb-2 overflow-x-auto pb-0.5 scrollbar-hide">
         {QUICK_BUTTONS.map((btn) => (
           <button
@@ -195,34 +218,34 @@ export function StickyQuickInput({
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          placeholder={isListening ? "Bicara sekarang..." : placeholder}
+          placeholder={isListening ? "Merekam..." : isTranscribing ? "Memproses..." : placeholder}
           disabled={loading}
           className="flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground/50"
         />
 
-        {/* Mic button — tampil kalau voice supported */}
-        {voiceSupported && (
-          <button
-            onClick={toggleVoice}
-            disabled={loading}
-            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
-              isListening
-                ? "bg-accent text-accent-foreground animate-pulse"
-                : "bg-muted text-muted-foreground hover:bg-accent/10 hover:text-accent"
-            }`}
-          >
-            {isListening ? (
-              <MicOff className="w-3.5 h-3.5" />
-            ) : (
-              <Mic className="w-3.5 h-3.5" />
-            )}
-          </button>
-        )}
+        {/* Mic button */}
+        <button
+          onClick={toggleVoice}
+          disabled={loading || isTranscribing}
+          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
+            isListening
+              ? "bg-red-500 text-white animate-pulse"
+              : isTranscribing
+              ? "bg-muted text-muted-foreground opacity-50"
+              : "bg-muted text-muted-foreground hover:bg-accent/10 hover:text-accent"
+          }`}
+        >
+          {isListening ? (
+            <MicOff className="w-3.5 h-3.5" />
+          ) : (
+            <Mic className="w-3.5 h-3.5" />
+          )}
+        </button>
 
         {/* Send button */}
         <button
           onClick={handleSubmit}
-          disabled={loading || !value.trim()}
+          disabled={loading || !value.trim() || micBusy}
           className="w-8 h-8 rounded-xl bg-accent flex items-center justify-center disabled:opacity-30 active:scale-90 transition-transform flex-shrink-0"
         >
           {loading ? (
