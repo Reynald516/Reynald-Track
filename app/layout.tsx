@@ -37,6 +37,7 @@ export default function RootLayout({
   return (
     <html lang="id">
       <head>
+        <meta name="dicoding:email" content="reynaldintelligence@gmail.com" />
         <meta name="theme-color" content="#000000" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
